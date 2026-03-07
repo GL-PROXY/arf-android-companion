@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="dark_surface">#FF121212</color>
+    <color name="dark_card">#FF1E1E1E</color>
+    <color name="dark_divider">#FF333333</color>
+    <color name="accent">#FFFF6F00</color>
+    <color name="text_primary">#FFEEEEEE</color>
+    <color name="text_secondary">#FFB0B0B0</color>
+    <color name="green">#FF4CAF50</color>
+    <color name="log_bg">#FF0A0A0A</color>
+    <color name="log_text">#FFAAAAAA</color>
+</resources>

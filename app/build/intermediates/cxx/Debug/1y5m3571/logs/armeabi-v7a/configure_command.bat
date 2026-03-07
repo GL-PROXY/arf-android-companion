@@ -1,0 +1,19 @@
+@echo off
+"C:\\Users\\Andrea\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\cmake.exe" ^
+  "-HC:\\Users\\Andrea\\Documents\\GitHub\\Unleashed-PCFW-inspiration-CFW\\companion\\psa-decrypt-android\\app\\src\\main\\cpp" ^
+  "-DCMAKE_SYSTEM_NAME=Android" ^
+  "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON" ^
+  "-DCMAKE_SYSTEM_VERSION=26" ^
+  "-DANDROID_PLATFORM=android-26" ^
+  "-DANDROID_ABI=armeabi-v7a" ^
+  "-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a" ^
+  "-DANDROID_NDK=C:\\Users\\Andrea\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393" ^
+  "-DCMAKE_ANDROID_NDK=C:\\Users\\Andrea\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393" ^
+  "-DCMAKE_TOOLCHAIN_FILE=C:\\Users\\Andrea\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393\\build\\cmake\\android.toolchain.cmake" ^
+  "-DCMAKE_MAKE_PROGRAM=C:\\Users\\Andrea\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe" ^
+  "-DCMAKE_CXX_FLAGS=-O3" ^
+  "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=C:\\Users\\Andrea\\Documents\\GitHub\\Unleashed-PCFW-inspiration-CFW\\companion\\psa-decrypt-android\\app\\build\\intermediates\\cxx\\Debug\\1y5m3571\\obj\\armeabi-v7a" ^
+  "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=C:\\Users\\Andrea\\Documents\\GitHub\\Unleashed-PCFW-inspiration-CFW\\companion\\psa-decrypt-android\\app\\build\\intermediates\\cxx\\Debug\\1y5m3571\\obj\\armeabi-v7a" ^
+  "-DCMAKE_BUILD_TYPE=Debug" ^
+  "-BC:\\Users\\Andrea\\Documents\\GitHub\\Unleashed-PCFW-inspiration-CFW\\companion\\psa-decrypt-android\\app\\.cxx\\Debug\\1y5m3571\\armeabi-v7a" ^
+  -GNinja

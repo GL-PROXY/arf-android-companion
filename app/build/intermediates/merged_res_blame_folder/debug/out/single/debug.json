@@ -1,0 +1,134 @@
+[
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-xxhdpi_ic_launcher_monochrome.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-xxhdpi\\ic_launcher_monochrome.png"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-xxxhdpi_ic_launcher_monochrome.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-xxxhdpi\\ic_launcher_monochrome.png"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-xhdpi_ic_launcher_foreground.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-xhdpi\\ic_launcher_foreground.png"
+    },
+    {
+        "merged": "com.flipper.psadecrypt.app-merged_res-35:/layout_fragment_about.xml.flat",
+        "source": "com.flipper.psadecrypt.app-main-37:/layout/fragment_about.xml"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-xhdpi_ic_launcher_background.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-xhdpi\\ic_launcher_background.png"
+    },
+    {
+        "merged": "com.flipper.psadecrypt.app-merged_res-35:/drawable_inspiration_banner.png.flat",
+        "source": "com.flipper.psadecrypt.app-main-37:/drawable/inspiration_banner.png"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-mdpi_ic_launcher.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-mdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-xxhdpi_ic_launcher_foreground.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-xxhdpi\\ic_launcher_foreground.png"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-anydpi-v26\\ic_launcher.xml"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-hdpi_ic_launcher_monochrome.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-hdpi\\ic_launcher_monochrome.png"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-mdpi_ic_launcher_background.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-mdpi\\ic_launcher_background.png"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-mdpi_ic_launcher_monochrome.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-mdpi\\ic_launcher_monochrome.png"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\layout_activity_main.xml.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\layout\\activity_main.xml"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-hdpi_ic_launcher_background.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-hdpi\\ic_launcher_background.png"
+    },
+    {
+        "merged": "com.flipper.psadecrypt.app-merged_res-35:/drawable_inspiration_banner_black.png.flat",
+        "source": "com.flipper.psadecrypt.app-main-37:/drawable/inspiration_banner_black.png"
+    },
+    {
+        "merged": "com.flipper.psadecrypt.app-merged_res-35:/layout_nav_header.xml.flat",
+        "source": "com.flipper.psadecrypt.app-main-37:/layout/nav_header.xml"
+    },
+    {
+        "merged": "com.flipper.psadecrypt.app-merged_res-35:/layout_fragment_psa_decrypt.xml.flat",
+        "source": "com.flipper.psadecrypt.app-main-37:/layout/fragment_psa_decrypt.xml"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\layout_fragment_about.xml.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\layout\\fragment_about.xml"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-mdpi_ic_launcher_foreground.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-mdpi\\ic_launcher_foreground.png"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\menu_nav_drawer.xml.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\menu\\nav_drawer.xml"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-xxxhdpi_ic_launcher_background.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-xxxhdpi\\ic_launcher_background.png"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-hdpi_ic_launcher_foreground.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-hdpi\\ic_launcher_foreground.png"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-xxhdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-xhdpi_ic_launcher_monochrome.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-xhdpi\\ic_launcher_monochrome.png"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-xxhdpi_ic_launcher_background.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-xxhdpi\\ic_launcher_background.png"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\layout_nav_header.xml.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\layout\\nav_header.xml"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-hdpi_ic_launcher.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-hdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-xxxhdpi\\ic_launcher.png"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\drawable_inspiration_banner.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\drawable\\inspiration_banner.png"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-xxxhdpi_ic_launcher_foreground.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-xxxhdpi\\ic_launcher_foreground.png"
+    },
+    {
+        "merged": "com.flipper.psadecrypt.app-merged_res-35:/layout_activity_main.xml.flat",
+        "source": "com.flipper.psadecrypt.app-main-37:/layout/activity_main.xml"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\layout_fragment_psa_decrypt.xml.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\layout\\fragment_psa_decrypt.xml"
+    },
+    {
+        "merged": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-merged_res-35:\\mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "C:\\Users\\Andrea\\.gradle\\daemon\\8.5\\com.flipper.psadecrypt.app-main-37:\\mipmap-xhdpi\\ic_launcher.png"
+    }
+]
