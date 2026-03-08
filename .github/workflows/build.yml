@@ -7,6 +7,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -32,8 +35,20 @@ jobs:
       - name: Build debug APK
         run: gradle --no-build-cache assembleDebug
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: companion-debug-apk
           path: app/build/outputs/apk/debug/*.apk
+
+      - name: Create release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          TAG="build-$(git rev-parse --short HEAD)"
+          APK=$(ls app/build/outputs/apk/debug/*.apk | head -n 1)
+          gh release create "$TAG" "$APK" \
+            --title "Build $TAG" \
+            --notes "Auto-built from commit $(git rev-parse --short HEAD)" \
+            --latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
