@@ -6,6 +6,10 @@
             android:id="@+id/nav_psa_decrypt"
             android:icon="@android:drawable/ic_lock_lock"
             android:title="PSA Decrypt" />
+        <item
+            android:id="@+id/nav_file_manager"
+            android:icon="@android:drawable/ic_menu_agenda"
+            android:title="File Manager" />
     </group>
 
     <item android:title="Other">

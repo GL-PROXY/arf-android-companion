@@ -20,8 +20,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import com.flipper.psadecrypt.filemanager.FileManagerFragment
+import com.flipper.psadecrypt.rpc.FlipperRpcClient
+import com.flipper.psadecrypt.storage.FlipperStorageApi
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.navigation.NavigationView
+import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -34,6 +38,12 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
     lateinit var bleClient: FlipperBleClient
         private set
     private val handler = Handler(Looper.getMainLooper())
+
+    // RPC client & storage API (initialized on BLE connect if RPC chars available)
+    private var rpcClient: FlipperRpcClient? = null
+    var storageApi: FlipperStorageApi? = null
+        private set
+    private var rpcScope: CoroutineScope? = null
 
     // UI — main
     private lateinit var drawerLayout: DrawerLayout
@@ -55,6 +65,7 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
 
     // Current fragment
     private var psaFragment: PsaDecryptFragment? = null
+    private var fileManagerFragment: FileManagerFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,6 +89,7 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
         navView.setNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_psa_decrypt -> showPsaDecrypt()
+                R.id.nav_file_manager -> showFileManager()
                 R.id.nav_about -> showAbout()
             }
             drawerLayout.closeDrawer(GravityCompat.START)
@@ -123,6 +135,7 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
     // --- Fragment navigation ---
 
     private fun showPsaDecrypt() {
+        fileManagerFragment = null
         val frag = PsaDecryptFragment()
         psaFragment = frag
         supportFragmentManager.beginTransaction()
@@ -131,12 +144,54 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
         supportActionBar?.title = "PSA Decrypt"
     }
 
+    private fun showFileManager() {
+        psaFragment = null
+        val frag = FileManagerFragment()
+        fileManagerFragment = frag
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, frag)
+            .commit()
+        supportActionBar?.title = "File Manager"
+    }
+
     private fun showAbout() {
         psaFragment = null
+        fileManagerFragment = null
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, AboutFragment())
             .commit()
         supportActionBar?.title = "About"
+    }
+
+    // --- RPC lifecycle ---
+
+    private fun startRpcClient() {
+        if (!bleClient.isRpcAvailable) {
+            appendLog("RPC characteristics not available, file manager won't work")
+            return
+        }
+        val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        val client = FlipperRpcClient(bleClient, scope)
+        client.start()
+        rpcClient = client
+        rpcScope = scope
+        storageApi = FlipperStorageApi(client)
+        appendLog("RPC client started (MTU=${bleClient.negotiatedMtu}, buffer=${bleClient.rpcBufferRemaining})")
+
+        // Notify file manager fragment
+        fileManagerFragment?.onConnectionChanged(true)
+    }
+
+    private fun stopRpcClient() {
+        rpcClient?.stop()
+        rpcClient = null
+        storageApi = null
+        rpcScope?.cancel()
+        rpcScope = null
+        appendLog("RPC client stopped")
+
+        // Notify file manager fragment
+        fileManagerFragment?.onConnectionChanged(false)
     }
 
     // --- Shared log ---
@@ -305,6 +360,9 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
         bleButton.setOnClickListener { bleClient.disconnect() }
         deviceSpinner.visibility = View.GONE
         BleKeepAliveService.start(this)
+
+        // Start RPC client for file manager
+        startRpcClient()
     }
 
     override fun onDisconnected() {
@@ -315,6 +373,9 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
         bleButton.setOnClickListener { requestPermissionsAndScan() }
         deviceSpinner.visibility = View.GONE
         BleKeepAliveService.stop(this)
+
+        // Stop RPC client
+        stopRpcClient()
     }
 
     override fun onDataReceived(data: ByteArray) {
@@ -336,6 +397,7 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
     override fun onDestroy() {
         super.onDestroy()
         psaFragment?.bfExecutor?.cancel()
+        stopRpcClient()
         bleClient.disconnect()
         BleKeepAliveService.stop(this)
     }

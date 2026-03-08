@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.flipper.psadecrypt.app-mergeDebugResources-33:/values-pl/values-pl.xml",
+            "outputFile": "com.flipper.psadecrypt.app-mergeDebugResources-34:/values-pl/values-pl.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Andrea\\.gradle\\caches\\transforms-3\\9da7ba67e3a8fa58b324ee0b34636051\\transformed\\material-1.11.0\\res\\values-pl\\values-pl.xml",
