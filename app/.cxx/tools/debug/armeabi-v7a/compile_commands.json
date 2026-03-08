@@ -1,7 +1,0 @@
-[
-{
-  "directory": "C:/Users/Andrea/Documents/GitHub/Unleashed-PCFW-inspiration-CFW/companion/psa-decrypt-android/app/.cxx/Debug/1y5m3571/armeabi-v7a",
-  "command": "C:\\Users\\Andrea\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\clang.exe --target=armv7-none-linux-androideabi26 --sysroot=C:/Users/Andrea/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot -Dtea_bruteforce_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security  -fno-limit-debug-info  -fPIC -O3 -Wall -o CMakeFiles\\tea_bruteforce.dir\\tea_bruteforce.c.o -c C:\\Users\\Andrea\\Documents\\GitHub\\Unleashed-PCFW-inspiration-CFW\\companion\\psa-decrypt-android\\app\\src\\main\\cpp\\tea_bruteforce.c",
-  "file": "C:\\Users\\Andrea\\Documents\\GitHub\\Unleashed-PCFW-inspiration-CFW\\companion\\psa-decrypt-android\\app\\src\\main\\cpp\\tea_bruteforce.c"
-}
-]
