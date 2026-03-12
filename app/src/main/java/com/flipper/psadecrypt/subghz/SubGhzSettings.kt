@@ -138,22 +138,81 @@ object SubGhzSettingsParser {
     }
 
     /**
-     * Format a frequency in Hz to a human-readable MHz string.
-     */
-    fun formatFrequencyMHz(hz: Long): String {
-        val mhz = hz / 1_000_000.0
-        return if (mhz == mhz.toLong().toDouble()) {
-            "${mhz.toLong()} MHz"
-        } else {
-            "%.3f MHz".format(mhz).trimEnd('0').trimEnd('.') + " MHz"
-        }
-    }
-
-    /**
      * Format frequency for display: "433.920 MHz"
      */
     fun formatFrequency(hz: Long): String {
         val mhz = hz / 1_000_000.0
         return "%.3f MHz".format(mhz)
+    }
+
+    /**
+     * Parse CC1101 preset hex data string into register pairs and PA table.
+     * Format: "REG1 VAL1 REG2 VAL2 ... 00 00 PA0 PA1 PA2 PA3 PA4 PA5 PA6 PA7"
+     *
+     * @return (registerPairs, paTableBytes) where each pair is (address, value) as uppercase hex strings
+     */
+    fun parsePresetData(hexString: String): Pair<List<Pair<String, String>>, List<String>> {
+        val bytes = hexString.trim().split("\\s+".toRegex()).filter { it.isNotEmpty() }
+        val registers = mutableListOf<Pair<String, String>>()
+        val paTable = mutableListOf<String>()
+
+        // Find the 00 00 terminator
+        var terminatorIndex = -1
+        var i = 0
+        while (i < bytes.size - 1) {
+            if (bytes[i].equals("00", ignoreCase = true) && bytes[i + 1].equals("00", ignoreCase = true)) {
+                terminatorIndex = i
+                break
+            }
+            i += 2
+        }
+
+        if (terminatorIndex < 0) {
+            // No terminator found — treat all as register pairs, empty PA
+            i = 0
+            while (i + 1 < bytes.size) {
+                registers.add(bytes[i].uppercase() to bytes[i + 1].uppercase())
+                i += 2
+            }
+            return registers to List(8) { "00" }
+        }
+
+        // Parse register pairs before terminator
+        i = 0
+        while (i < terminatorIndex) {
+            if (i + 1 < bytes.size) {
+                registers.add(bytes[i].uppercase() to bytes[i + 1].uppercase())
+            }
+            i += 2
+        }
+
+        // Parse PA table (8 bytes after terminator)
+        val paStart = terminatorIndex + 2
+        for (j in 0 until 8) {
+            if (paStart + j < bytes.size) {
+                paTable.add(bytes[paStart + j].uppercase())
+            } else {
+                paTable.add("00")
+            }
+        }
+
+        return registers to paTable
+    }
+
+    /**
+     * Serialize register pairs and PA table back to hex data string.
+     */
+    fun serializePresetData(registers: List<Pair<String, String>>, paTable: List<String>): String {
+        val parts = mutableListOf<String>()
+        for ((addr, value) in registers) {
+            parts.add(addr.uppercase())
+            parts.add(value.uppercase())
+        }
+        parts.add("00")
+        parts.add("00")
+        for (i in 0 until 8) {
+            parts.add(if (i < paTable.size) paTable[i].uppercase() else "00")
+        }
+        return parts.joinToString(" ")
     }
 }

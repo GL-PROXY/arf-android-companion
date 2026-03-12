@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -261,53 +262,100 @@ class SubGhzSettingsFragment : Fragment() {
     }
 
     private fun showPresetDialog(title: String, preset: CustomPreset, onDone: (CustomPreset) -> Unit) {
-        val layout = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(48, 24, 48, 8)
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_preset_editor, null)
+
+        val nameInput = dialogView.findViewById<EditText>(R.id.edit_preset_name)
+        val registerContainer = dialogView.findViewById<LinearLayout>(R.id.register_container)
+        val addRegisterBtn = dialogView.findViewById<View>(R.id.btn_add_register)
+
+        val paFields = listOf(
+            dialogView.findViewById<EditText>(R.id.pa_0),
+            dialogView.findViewById<EditText>(R.id.pa_1),
+            dialogView.findViewById<EditText>(R.id.pa_2),
+            dialogView.findViewById<EditText>(R.id.pa_3),
+            dialogView.findViewById<EditText>(R.id.pa_4),
+            dialogView.findViewById<EditText>(R.id.pa_5),
+            dialogView.findViewById<EditText>(R.id.pa_6),
+            dialogView.findViewById<EditText>(R.id.pa_7)
+        )
+
+        nameInput.setText(preset.name)
+
+        // Parse existing data into register pairs + PA table
+        val (registers, paTable) = if (preset.data.isNotBlank()) {
+            SubGhzSettingsParser.parsePresetData(preset.data)
+        } else {
+            emptyList<Pair<String, String>>() to List(8) { "00" }
         }
 
-        val nameInput = EditText(requireContext()).apply {
-            hint = "Preset name (e.g. FM95)"
-            setText(preset.name)
+        // Populate PA table fields
+        for (i in paFields.indices) {
+            paFields[i].setText(if (i < paTable.size) paTable[i] else "00")
         }
-        layout.addView(nameInput)
 
-        val dataInput = EditText(requireContext()).apply {
-            hint = "CC1101 register data (hex bytes)"
-            setText(preset.data)
-            textSize = 12f
-            minLines = 3
-            setHorizontallyScrolling(true)
+        // Populate register rows
+        for ((addr, value) in registers) {
+            addRegisterRow(registerContainer, addr, value)
         }
-        layout.addView(dataInput)
+
+        // Add Register button
+        addRegisterBtn.setOnClickListener {
+            addRegisterRow(registerContainer, "", "")
+        }
 
         AlertDialog.Builder(requireContext())
             .setTitle(title)
-            .setView(layout)
+            .setView(dialogView)
             .setPositiveButton("Save") { _, _ ->
                 val name = nameInput.text.toString().trim()
-                val data = dataInput.text.toString().trim()
-
                 if (name.isEmpty()) {
                     Toast.makeText(requireContext(), "Name is required", Toast.LENGTH_SHORT).show()
                     return@setPositiveButton
                 }
-                if (data.isEmpty()) {
-                    Toast.makeText(requireContext(), "Register data is required", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
+
+                // Collect register pairs
+                val regPairs = mutableListOf<Pair<String, String>>()
+                val hexPattern = Regex("^[0-9A-Fa-f]{2}$")
+                for (i in 0 until registerContainer.childCount) {
+                    val row = registerContainer.getChildAt(i)
+                    val addr = row.findViewById<EditText>(R.id.edit_addr).text.toString().trim().uppercase()
+                    val value = row.findViewById<EditText>(R.id.edit_val).text.toString().trim().uppercase()
+                    if (addr.isEmpty() && value.isEmpty()) continue // skip empty rows
+                    if (!hexPattern.matches(addr) || !hexPattern.matches(value)) {
+                        Toast.makeText(requireContext(), "Invalid register: 0x$addr = 0x$value", Toast.LENGTH_SHORT).show()
+                        return@setPositiveButton
+                    }
+                    regPairs.add(addr to value)
                 }
 
-                // Basic validation: data should be hex bytes separated by spaces
-                val hexPattern = Regex("^([0-9A-Fa-f]{2}\\s)*[0-9A-Fa-f]{2}$")
-                if (!hexPattern.matches(data)) {
-                    Toast.makeText(requireContext(), "Invalid hex data format", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
+                // Collect PA table
+                val pa = mutableListOf<String>()
+                for (field in paFields) {
+                    val byte = field.text.toString().trim().uppercase().ifEmpty { "00" }
+                    if (!hexPattern.matches(byte)) {
+                        Toast.makeText(requireContext(), "Invalid PA table byte: $byte", Toast.LENGTH_SHORT).show()
+                        return@setPositiveButton
+                    }
+                    pa.add(byte)
                 }
 
+                val data = SubGhzSettingsParser.serializePresetData(regPairs, pa)
                 onDone(CustomPreset(name, "CC1101", data))
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun addRegisterRow(container: LinearLayout, addr: String, value: String) {
+        val row = LayoutInflater.from(requireContext())
+            .inflate(R.layout.item_register_pair, container, false)
+        row.findViewById<EditText>(R.id.edit_addr).setText(addr)
+        row.findViewById<EditText>(R.id.edit_val).setText(value)
+        row.findViewById<ImageButton>(R.id.btn_delete_reg).setOnClickListener {
+            container.removeView(row)
+        }
+        container.addView(row)
     }
 
     private fun confirmDeletePreset(index: Int) {

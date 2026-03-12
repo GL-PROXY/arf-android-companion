@@ -5,9 +5,12 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:paddingHorizontal="16dp"
-    android:paddingVertical="8dp"
-    android:background="?attr/selectableItemBackground">
+    android:background="@color/dark_card">
+
+    <View
+        android:layout_width="2dp"
+        android:layout_height="match_parent"
+        android:background="@color/accent" />
 
     <TextView
         android:id="@+id/txt_frequency"
@@ -17,7 +20,9 @@
         android:text="433.920 MHz"
         android:textSize="14sp"
         android:textColor="@color/text_primary"
-        android:fontFamily="monospace" />
+        android:fontFamily="monospace"
+        android:paddingStart="14dp"
+        android:paddingVertical="10dp" />
 
     <TextView
         android:id="@+id/txt_default_badge"
@@ -34,6 +39,7 @@
         android:id="@+id/btn_delete"
         android:layout_width="32dp"
         android:layout_height="32dp"
+        android:layout_marginEnd="8dp"
         android:src="@android:drawable/ic_menu_close_clear_cancel"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="Remove"

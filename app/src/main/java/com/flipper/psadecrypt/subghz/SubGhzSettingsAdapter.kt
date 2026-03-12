@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.flipper.psadecrypt.R
 
 sealed class SettingsItem {
-    data class SectionHeader(val title: String) : SettingsItem()
+    data class SectionHeader(val title: String, val isCollapsed: Boolean, val childCount: Int) : SettingsItem()
     data class ToggleItem(val label: String, val checked: Boolean) : SettingsItem()
     data class FrequencyItem(val hz: Long, val isDefault: Boolean, val isHopper: Boolean) : SettingsItem()
     data class PresetItem(val index: Int, val preset: CustomPreset) : SettingsItem()
@@ -32,6 +32,8 @@ class SubGhzSettingsAdapter(
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val items = mutableListOf<SettingsItem>()
+    private val collapsedSections = mutableSetOf<String>()
+    private var currentSettings: SubGhzSettings? = null
 
     companion object {
         private const val TYPE_SECTION_HEADER = 0
@@ -42,38 +44,65 @@ class SubGhzSettingsAdapter(
     }
 
     fun updateItems(settings: SubGhzSettings) {
+        currentSettings = settings
+        rebuildItems()
+    }
+
+    private fun rebuildItems() {
+        val settings = currentSettings ?: return
         items.clear()
         items.addAll(buildItems(settings))
         notifyDataSetChanged()
+    }
+
+    private fun toggleSection(title: String) {
+        if (collapsedSections.contains(title)) {
+            collapsedSections.remove(title)
+        } else {
+            collapsedSections.add(title)
+        }
+        rebuildItems()
     }
 
     private fun buildItems(settings: SubGhzSettings): List<SettingsItem> {
         val list = mutableListOf<SettingsItem>()
 
         // General section
-        list.add(SettingsItem.SectionHeader("General"))
-        list.add(SettingsItem.ToggleItem("Add standard frequencies", settings.addStandardFrequencies))
+        val generalCollapsed = "General" in collapsedSections
+        list.add(SettingsItem.SectionHeader("General", generalCollapsed, 1))
+        if (!generalCollapsed) {
+            list.add(SettingsItem.ToggleItem("Add standard frequencies", settings.addStandardFrequencies))
+        }
 
         // Frequencies section
-        list.add(SettingsItem.SectionHeader("Frequencies"))
-        for (freq in settings.frequencies) {
-            list.add(SettingsItem.FrequencyItem(freq, freq == settings.defaultFrequency, isHopper = false))
+        val freqCollapsed = "Frequencies" in collapsedSections
+        list.add(SettingsItem.SectionHeader("Frequencies", freqCollapsed, settings.frequencies.size))
+        if (!freqCollapsed) {
+            for (freq in settings.frequencies) {
+                list.add(SettingsItem.FrequencyItem(freq, freq == settings.defaultFrequency, isHopper = false))
+            }
+            list.add(SettingsItem.AddButton("+ Add Frequency", SettingsItem.AddType.FREQUENCY))
         }
-        list.add(SettingsItem.AddButton("+ Add Frequency", SettingsItem.AddType.FREQUENCY))
 
         // Hopper frequencies section
-        list.add(SettingsItem.SectionHeader("Hopper Frequencies"))
-        for (freq in settings.hopperFrequencies) {
-            list.add(SettingsItem.FrequencyItem(freq, isDefault = false, isHopper = true))
+        val hopperCollapsed = "Hopper Frequencies" in collapsedSections
+        list.add(SettingsItem.SectionHeader("Hopper Frequencies", hopperCollapsed, settings.hopperFrequencies.size))
+        if (!hopperCollapsed) {
+            for (freq in settings.hopperFrequencies) {
+                list.add(SettingsItem.FrequencyItem(freq, isDefault = false, isHopper = true))
+            }
+            list.add(SettingsItem.AddButton("+ Add Hopper Frequency", SettingsItem.AddType.HOPPER))
         }
-        list.add(SettingsItem.AddButton("+ Add Hopper Frequency", SettingsItem.AddType.HOPPER))
 
         // Custom presets section
-        list.add(SettingsItem.SectionHeader("Custom Presets"))
-        for ((index, preset) in settings.customPresets.withIndex()) {
-            list.add(SettingsItem.PresetItem(index, preset))
+        val presetsCollapsed = "Custom Presets" in collapsedSections
+        list.add(SettingsItem.SectionHeader("Custom Presets", presetsCollapsed, settings.customPresets.size))
+        if (!presetsCollapsed) {
+            for ((index, preset) in settings.customPresets.withIndex()) {
+                list.add(SettingsItem.PresetItem(index, preset))
+            }
+            list.add(SettingsItem.AddButton("+ Add Preset", SettingsItem.AddType.PRESET))
         }
-        list.add(SettingsItem.AddButton("+ Add Preset", SettingsItem.AddType.PRESET))
 
         return list
     }
@@ -113,9 +142,20 @@ class SubGhzSettingsAdapter(
     // --- ViewHolders ---
 
     inner class SectionHeaderVH(view: View) : RecyclerView.ViewHolder(view) {
+        private val chevron: TextView = view.findViewById(R.id.txt_chevron)
         private val title: TextView = view.findViewById(R.id.txt_section_title)
+        private val count: TextView = view.findViewById(R.id.txt_item_count)
+
         fun bind(item: SettingsItem.SectionHeader) {
             title.text = item.title
+            chevron.text = if (item.isCollapsed) "\u25B6" else "\u25BC"
+            if (item.isCollapsed && item.childCount > 0) {
+                count.text = "${item.childCount}"
+                count.visibility = View.VISIBLE
+            } else {
+                count.visibility = View.GONE
+            }
+            itemView.setOnClickListener { toggleSection(item.title) }
         }
     }
 

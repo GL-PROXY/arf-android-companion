@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Preset name -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Preset Name"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:paddingBottom="4dp" />
+
+        <EditText
+            android:id="@+id/edit_preset_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="e.g. FM95"
+            android:textSize="14sp"
+            android:inputType="text"
+            android:paddingBottom="12dp" />
+
+        <!-- Registers section -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CC1101 Registers"
+            android:textSize="12sp"
+            android:textColor="@color/accent"
+            android:textAllCaps="true"
+            android:letterSpacing="0.05"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp" />
+
+        <!-- Register header row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:layout_width="72dp"
+                android:layout_height="wrap_content"
+                android:text="Address"
+                android:textSize="11sp"
+                android:textColor="@color/text_secondary"
+                android:gravity="center" />
+
+            <View android:layout_width="16dp" android:layout_height="0dp" />
+
+            <TextView
+                android:layout_width="72dp"
+                android:layout_height="wrap_content"
+                android:text="Value"
+                android:textSize="11sp"
+                android:textColor="@color/text_secondary"
+                android:gravity="center" />
+        </LinearLayout>
+
+        <!-- Dynamic register pair rows -->
+        <LinearLayout
+            android:id="@+id/register_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <Button
+            android:id="@+id/btn_add_register"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="+ Add Register"
+            android:textSize="12sp"
+            android:textColor="@color/accent"
+            style="@style/Widget.MaterialComponents.Button.TextButton" />
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/text_secondary"
+            android:layout_marginVertical="12dp"
+            android:alpha="0.3" />
+
+        <!-- PA Table section -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="PA Table (8 bytes)"
+            android:textSize="12sp"
+            android:textColor="@color/accent"
+            android:textAllCaps="true"
+            android:letterSpacing="0.05"
+            android:paddingBottom="8dp" />
+
+        <LinearLayout
+            android:id="@+id/pa_table_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <EditText
+                android:id="@+id/pa_0"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:gravity="center"
+                android:hint="00"
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:maxLength="2"
+                android:inputType="textCapCharacters|textNoSuggestions"
+                android:layout_marginEnd="4dp" />
+            <EditText
+                android:id="@+id/pa_1"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:gravity="center"
+                android:hint="00"
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:maxLength="2"
+                android:inputType="textCapCharacters|textNoSuggestions"
+                android:layout_marginEnd="4dp" />
+            <EditText
+                android:id="@+id/pa_2"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:gravity="center"
+                android:hint="00"
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:maxLength="2"
+                android:inputType="textCapCharacters|textNoSuggestions"
+                android:layout_marginEnd="4dp" />
+            <EditText
+                android:id="@+id/pa_3"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:gravity="center"
+                android:hint="00"
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:maxLength="2"
+                android:inputType="textCapCharacters|textNoSuggestions"
+                android:layout_marginEnd="4dp" />
+            <EditText
+                android:id="@+id/pa_4"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:gravity="center"
+                android:hint="00"
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:maxLength="2"
+                android:inputType="textCapCharacters|textNoSuggestions"
+                android:layout_marginEnd="4dp" />
+            <EditText
+                android:id="@+id/pa_5"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:gravity="center"
+                android:hint="00"
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:maxLength="2"
+                android:inputType="textCapCharacters|textNoSuggestions"
+                android:layout_marginEnd="4dp" />
+            <EditText
+                android:id="@+id/pa_6"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:gravity="center"
+                android:hint="00"
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:maxLength="2"
+                android:inputType="textCapCharacters|textNoSuggestions"
+                android:layout_marginEnd="4dp" />
+            <EditText
+                android:id="@+id/pa_7"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:gravity="center"
+                android:hint="00"
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:maxLength="2"
+                android:inputType="textCapCharacters|textNoSuggestions" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
