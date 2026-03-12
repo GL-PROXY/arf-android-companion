@@ -40,7 +40,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
         android:lineSpacingExtra="4dp"
-        android:text="Companion app for Inspiration PCFW\nCrypto offloader/settings manager for the Inspiration Firmware."
+        android:text="Companion app for ARF Firmware\nCrypto offloader/settings manager for the ARF Firmware."
         android:textSize="14sp"
         android:textColor="@color/text_primary" />
 
@@ -53,8 +53,24 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:lineSpacingExtra="4dp"
+        android:text="Firmware:\nhttps://github.com/D4C1-Labs/Flipper-ARF\n\nCompanion App:\nhttps://github.com/D4C1-Labs/arf-android-companion"
+        android:textSize="13sp"
+        android:textColor="@color/accent"
+        android:autoLink="web" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/dark_divider"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Built by luhf for Inspiration PCFW\nInspiration PCFW by D4rk$1d3, luhf, 47LeCoste, DACI\n[any many others]"
+        android:text="Built by luhf for ARF Firmware\nARF Firmware by D4rk$1d3, luhf, 47LeCoste, DACI\n[and many others]"
         android:textColor="@color/text_secondary"
         android:textSize="12sp" />
 

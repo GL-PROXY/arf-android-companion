@@ -27,6 +27,17 @@
             android:inputType="text"
             android:paddingBottom="12dp" />
 
+        <!-- Paste from clipboard -->
+        <Button
+            android:id="@+id/btn_paste_hex"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:text="Paste hex data from clipboard"
+            android:textSize="12sp"
+            android:textColor="@color/accent"
+            android:layout_marginBottom="8dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+
         <!-- Registers section -->
         <TextView
             android:layout_width="match_parent"
@@ -101,17 +112,19 @@
             android:letterSpacing="0.05"
             android:paddingBottom="8dp" />
 
+        <!-- Row 1: PA bytes 0-3 -->
         <LinearLayout
-            android:id="@+id/pa_table_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:paddingBottom="4dp">
 
             <EditText
                 android:id="@+id/pa_0"
-                android:layout_width="40dp"
+                android:layout_width="0dp"
                 android:layout_height="40dp"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:hint="00"
                 android:textSize="12sp"
@@ -121,8 +134,9 @@
                 android:layout_marginEnd="4dp" />
             <EditText
                 android:id="@+id/pa_1"
-                android:layout_width="40dp"
+                android:layout_width="0dp"
                 android:layout_height="40dp"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:hint="00"
                 android:textSize="12sp"
@@ -132,8 +146,9 @@
                 android:layout_marginEnd="4dp" />
             <EditText
                 android:id="@+id/pa_2"
-                android:layout_width="40dp"
+                android:layout_width="0dp"
                 android:layout_height="40dp"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:hint="00"
                 android:textSize="12sp"
@@ -143,19 +158,29 @@
                 android:layout_marginEnd="4dp" />
             <EditText
                 android:id="@+id/pa_3"
-                android:layout_width="40dp"
+                android:layout_width="0dp"
                 android:layout_height="40dp"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:hint="00"
                 android:textSize="12sp"
                 android:fontFamily="monospace"
                 android:maxLength="2"
-                android:inputType="textCapCharacters|textNoSuggestions"
-                android:layout_marginEnd="4dp" />
+                android:inputType="textCapCharacters|textNoSuggestions" />
+        </LinearLayout>
+
+        <!-- Row 2: PA bytes 4-7 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
             <EditText
                 android:id="@+id/pa_4"
-                android:layout_width="40dp"
+                android:layout_width="0dp"
                 android:layout_height="40dp"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:hint="00"
                 android:textSize="12sp"
@@ -165,8 +190,9 @@
                 android:layout_marginEnd="4dp" />
             <EditText
                 android:id="@+id/pa_5"
-                android:layout_width="40dp"
+                android:layout_width="0dp"
                 android:layout_height="40dp"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:hint="00"
                 android:textSize="12sp"
@@ -176,8 +202,9 @@
                 android:layout_marginEnd="4dp" />
             <EditText
                 android:id="@+id/pa_6"
-                android:layout_width="40dp"
+                android:layout_width="0dp"
                 android:layout_height="40dp"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:hint="00"
                 android:textSize="12sp"
@@ -187,8 +214,9 @@
                 android:layout_marginEnd="4dp" />
             <EditText
                 android:id="@+id/pa_7"
-                android:layout_width="40dp"
+                android:layout_width="0dp"
                 android:layout_height="40dp"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:hint="00"
                 android:textSize="12sp"

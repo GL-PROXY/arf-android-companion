@@ -1,6 +1,8 @@
 package com.flipper.psadecrypt.subghz
 
 import android.app.AlertDialog
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -302,6 +304,38 @@ class SubGhzSettingsFragment : Fragment() {
         // Add Register button
         addRegisterBtn.setOnClickListener {
             addRegisterRow(registerContainer, "", "")
+        }
+
+        // Paste hex data from clipboard
+        dialogView.findViewById<View>(R.id.btn_paste_hex).setOnClickListener {
+            val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clipText = clipboard.primaryClip?.getItemAt(0)?.text?.toString()?.trim()
+            if (clipText.isNullOrBlank()) {
+                Toast.makeText(requireContext(), "Clipboard is empty", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Validate it looks like hex bytes
+            val hexPattern = Regex("^([0-9A-Fa-f]{2}\\s)*[0-9A-Fa-f]{2}$")
+            if (!hexPattern.matches(clipText)) {
+                Toast.makeText(requireContext(), "Clipboard doesn't contain valid hex data", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
+            val (pastedRegisters, pastedPa) = SubGhzSettingsParser.parsePresetData(clipText)
+
+            // Clear existing rows and repopulate
+            registerContainer.removeAllViews()
+            for ((addr, value) in pastedRegisters) {
+                addRegisterRow(registerContainer, addr, value)
+            }
+
+            // Update PA table fields
+            for (i in paFields.indices) {
+                paFields[i].setText(if (i < pastedPa.size) pastedPa[i] else "00")
+            }
+
+            Toast.makeText(requireContext(), "Pasted ${pastedRegisters.size} registers", Toast.LENGTH_SHORT).show()
         }
 
         AlertDialog.Builder(requireContext())
