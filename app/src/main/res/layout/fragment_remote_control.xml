@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/dark_surface"
+    android:gravity="center_horizontal">
+
+    <!-- Not connected overlay -->
+    <TextView
+        android:id="@+id/txt_not_connected"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="Connect to Flipper via BLE first"
+        android:textSize="14sp"
+        android:textColor="@color/text_secondary"
+        android:gravity="center"
+        android:visibility="gone" />
+
+    <!-- Flipper screen display -->
+    <FrameLayout
+        android:id="@+id/screen_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/img_screen"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"
+            android:background="#FFFF8C29"
+            android:contentDescription="Flipper screen" />
+    </FrameLayout>
+
+    <!-- D-pad controls -->
+    <LinearLayout
+        android:id="@+id/controls_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:paddingBottom="24dp">
+
+        <!-- UP -->
+        <Button
+            android:id="@+id/btn_up"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:text="\u25B2"
+            android:textSize="24sp"
+            android:textColor="@color/text_primary"
+            android:backgroundTint="@color/dark_card" />
+
+        <!-- LEFT / OK / RIGHT -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Button
+                android:id="@+id/btn_left"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:text="\u25C0"
+                android:textSize="24sp"
+                android:textColor="@color/text_primary"
+                android:backgroundTint="@color/dark_card" />
+
+            <Button
+                android:id="@+id/btn_ok"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_marginHorizontal="4dp"
+                android:text="OK"
+                android:textSize="16sp"
+                android:textColor="@color/dark_surface"
+                android:backgroundTint="@color/accent" />
+
+            <Button
+                android:id="@+id/btn_right"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:text="\u25B6"
+                android:textSize="24sp"
+                android:textColor="@color/text_primary"
+                android:backgroundTint="@color/dark_card" />
+        </LinearLayout>
+
+        <!-- DOWN -->
+        <Button
+            android:id="@+id/btn_down"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:text="\u25BC"
+            android:textSize="24sp"
+            android:textColor="@color/text_primary"
+            android:backgroundTint="@color/dark_card" />
+
+        <!-- BACK -->
+        <Button
+            android:id="@+id/btn_back"
+            android:layout_width="120dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:text="BACK"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:backgroundTint="@color/dark_card" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -21,6 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.flipper.psadecrypt.filemanager.FileManagerFragment
+import com.flipper.psadecrypt.remotecontrol.RemoteControlFragment
 import com.flipper.psadecrypt.rpc.FlipperRpcClient
 import com.flipper.psadecrypt.storage.FlipperStorageApi
 import com.google.android.material.appbar.MaterialToolbar
@@ -40,7 +41,8 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
     private val handler = Handler(Looper.getMainLooper())
 
     // RPC client & storage API (initialized on BLE connect if RPC chars available)
-    private var rpcClient: FlipperRpcClient? = null
+    var rpcClient: FlipperRpcClient? = null
+        private set
     var storageApi: FlipperStorageApi? = null
         private set
     private var rpcScope: CoroutineScope? = null
@@ -66,6 +68,7 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
     // Current fragment
     private var psaFragment: PsaDecryptFragment? = null
     private var fileManagerFragment: FileManagerFragment? = null
+    private var remoteControlFragment: RemoteControlFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,6 +93,7 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
             when (item.itemId) {
                 R.id.nav_psa_decrypt -> showPsaDecrypt()
                 R.id.nav_file_manager -> showFileManager()
+                R.id.nav_remote_control -> showRemoteControl()
                 R.id.nav_about -> showAbout()
             }
             drawerLayout.closeDrawer(GravityCompat.START)
@@ -134,8 +138,14 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
 
     // --- Fragment navigation ---
 
-    private fun showPsaDecrypt() {
+    private fun clearFragmentRefs() {
+        psaFragment = null
         fileManagerFragment = null
+        remoteControlFragment = null
+    }
+
+    private fun showPsaDecrypt() {
+        clearFragmentRefs()
         val frag = PsaDecryptFragment()
         psaFragment = frag
         supportFragmentManager.beginTransaction()
@@ -145,7 +155,7 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
     }
 
     private fun showFileManager() {
-        psaFragment = null
+        clearFragmentRefs()
         val frag = FileManagerFragment()
         fileManagerFragment = frag
         supportFragmentManager.beginTransaction()
@@ -154,9 +164,18 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
         supportActionBar?.title = "File Manager"
     }
 
+    private fun showRemoteControl() {
+        clearFragmentRefs()
+        val frag = RemoteControlFragment()
+        remoteControlFragment = frag
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, frag)
+            .commit()
+        supportActionBar?.title = "Remote Control"
+    }
+
     private fun showAbout() {
-        psaFragment = null
-        fileManagerFragment = null
+        clearFragmentRefs()
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, AboutFragment())
             .commit()
@@ -178,8 +197,9 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
         storageApi = FlipperStorageApi(client)
         appendLog("RPC client started (MTU=${bleClient.negotiatedMtu}, buffer=${bleClient.rpcBufferRemaining})")
 
-        // Notify file manager fragment
+        // Notify active fragments
         fileManagerFragment?.onConnectionChanged(true)
+        remoteControlFragment?.onConnectionChanged(true)
     }
 
     private fun stopRpcClient() {
@@ -190,8 +210,9 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
         rpcScope = null
         appendLog("RPC client stopped")
 
-        // Notify file manager fragment
+        // Notify active fragments
         fileManagerFragment?.onConnectionChanged(false)
+        remoteControlFragment?.onConnectionChanged(false)
     }
 
     // --- Shared log ---

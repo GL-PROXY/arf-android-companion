@@ -27,6 +27,12 @@ class FlipperRpcClient(
     private val accumulator = ByteAccumulator()
 
     /**
+     * Listener for unsolicited screen frame notifications (field 22, commandId=0).
+     * Called on the parse thread — implementations should not block.
+     */
+    var screenFrameListener: ((ProtobufCodec.ScreenFrameData) -> Unit)? = null
+
+    /**
      * Pending response handlers: commandId -> channel that receives response chunks.
      * For streaming responses (has_next=true), multiple items are sent.
      * The channel is closed when has_next=false or on error.
@@ -90,9 +96,22 @@ class FlipperRpcClient(
     }
 
     private fun dispatchResponse(response: ProtobufCodec.MainResponse) {
+        // Screen frame notifications arrive with commandId=0 and content field 22
+        if (response.contentFieldNumber == 22) {
+            try {
+                val frame = ProtobufCodec.parseScreenFrame(response.contentBytes)
+                screenFrameListener?.invoke(frame)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to parse screen frame", e)
+            }
+            return
+        }
+
         val channel = pendingRequests[response.commandId]
         if (channel == null) {
-            Log.w(TAG, "Response for unknown command_id=${response.commandId}")
+            if (response.commandId != 0) {
+                Log.w(TAG, "Response for unknown command_id=${response.commandId}")
+            }
             return
         }
         channel.trySend(response)
@@ -206,6 +225,14 @@ class FlipperRpcClient(
             pendingRequests.remove(commandId)
             Result.failure(e)
         }
+    }
+
+    /**
+     * Send a request without waiting for a response (fire-and-forget).
+     * Used for input events where we don't need to track the response.
+     */
+    suspend fun sendFireAndForget(data: ByteArray) {
+        sendWithOverflowControl(data)
     }
 
     fun allocateCommandId(): Int = nextCommandId()

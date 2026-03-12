@@ -28,6 +28,12 @@ import java.io.ByteArrayOutputStream
  *   28: storage_info_request
  *   29: storage_info_response
  *   30: storage_rename_request
+ *
+ * GUI oneof content fields in Main:
+ *   20: gui_start_screen_stream_request (empty)
+ *   21: gui_stop_screen_stream_request (empty)
+ *   22: gui_screen_frame (ScreenFrame: data=1, orientation=2)
+ *   23: gui_send_input_event_request (SendInputEventRequest: key=1, type=2)
  */
 object ProtobufCodec {
 
@@ -114,7 +120,11 @@ object ProtobufCodec {
         val mainBody = ByteArrayOutputStream(contentBytes.size + 20)
         writeVarintField(mainBody, 1, commandId)     // command_id
         writeBoolField(mainBody, 3, hasNext)          // has_next
-        writeLenDelimField(mainBody, contentFieldNumber, contentBytes) // oneof content
+        // Always emit oneof content field (even if empty, e.g. StartScreenStreamRequest)
+        val tag = (contentFieldNumber shl 3) or 2
+        mainBody.write(encodeVarint(tag))
+        mainBody.write(encodeVarint(contentBytes.size))
+        mainBody.write(contentBytes)
         val body = mainBody.toByteArray()
 
         // Wrap with varint length prefix
@@ -487,5 +497,81 @@ object ProtobufCodec {
             5 -> pos + 4 // 32-bit
             else -> data.size // unknown, skip to end
         }
+    }
+
+    // --- GUI request builders ---
+
+    /**
+     * GUI StartScreenStreamRequest (empty message body).
+     * Main field 20.
+     */
+    fun buildStartScreenStreamRequest(commandId: Int): ByteArray {
+        return buildMainMessage(commandId, contentFieldNumber = 20, contentBytes = ByteArray(0))
+    }
+
+    /**
+     * GUI StopScreenStreamRequest (empty message body).
+     * Main field 21.
+     */
+    fun buildStopScreenStreamRequest(commandId: Int): ByteArray {
+        return buildMainMessage(commandId, contentFieldNumber = 21, contentBytes = ByteArray(0))
+    }
+
+    /**
+     * GUI SendInputEventRequest.
+     *   field 1: key (InputKey enum: UP=0, DOWN=1, RIGHT=2, LEFT=3, OK=4, BACK=5)
+     *   field 2: type (InputType enum: PRESS=0, RELEASE=1, SHORT=2, LONG=3, REPEAT=4)
+     * Main field 23.
+     */
+    fun buildSendInputEventRequest(commandId: Int, key: Int, type: Int): ByteArray {
+        val inner = ByteArrayOutputStream(10)
+        writeVarintField(inner, 1, key)
+        writeVarintField(inner, 2, type)
+        return buildMainMessage(commandId, contentFieldNumber = 23, contentBytes = inner.toByteArray())
+    }
+
+    // --- GUI response parsers ---
+
+    /**
+     * Parsed screen frame from a gui_screen_frame notification (field 22).
+     */
+    data class ScreenFrameData(
+        val data: ByteArray = ByteArray(0),
+        val orientation: Int = 0 // 0=HORIZONTAL, 1=HORIZONTAL_FLIP, 2=VERTICAL, 3=VERTICAL_FLIP
+    )
+
+    /**
+     * Parse a ScreenFrame message body (content of field 22).
+     * ScreenFrame:
+     *   field 1: data (bytes) — 1024 bytes for 128x64 1bpp
+     *   field 2: orientation (enum)
+     */
+    fun parseScreenFrame(data: ByteArray): ScreenFrameData {
+        var frameData = ByteArray(0)
+        var orientation = 0
+        var pos = 0
+        while (pos < data.size) {
+            val tagResult = readVarint(data, pos)
+            val tag = tagResult.first
+            pos = tagResult.second
+            val fieldNumber = tag ushr 3
+            val wireType = tag and 0x07
+
+            when {
+                wireType == 2 && fieldNumber == 1 -> { // data (bytes)
+                    val lenResult = readVarint(data, pos)
+                    pos = lenResult.second
+                    frameData = data.copyOfRange(pos, (pos + lenResult.first).coerceAtMost(data.size))
+                    pos += lenResult.first
+                }
+                wireType == 0 && fieldNumber == 2 -> { // orientation (enum)
+                    val r = readVarint(data, pos)
+                    orientation = r.first
+                    pos = r.second
+                }
+                else -> pos = skipField(data, pos, wireType)
+            }
+        }
+        return ScreenFrameData(frameData, orientation)
     }
 }
