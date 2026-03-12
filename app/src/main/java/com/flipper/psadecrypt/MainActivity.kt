@@ -306,7 +306,7 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
             } else {
                 bleStatusText.text = "No Flipper found"
             }
-        }, 10000)
+        }, 1500)
     }
 
     private val scanCallback = object : ScanCallback() {
