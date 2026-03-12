@@ -22,6 +22,7 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.flipper.psadecrypt.filemanager.FileManagerFragment
 import com.flipper.psadecrypt.remotecontrol.RemoteControlFragment
+import com.flipper.psadecrypt.subghz.SubGhzSettingsFragment
 import com.flipper.psadecrypt.rpc.FlipperRpcClient
 import com.flipper.psadecrypt.storage.FlipperStorageApi
 import com.google.android.material.appbar.MaterialToolbar
@@ -69,6 +70,7 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
     private var psaFragment: PsaDecryptFragment? = null
     private var fileManagerFragment: FileManagerFragment? = null
     private var remoteControlFragment: RemoteControlFragment? = null
+    private var subGhzSettingsFragment: SubGhzSettingsFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -94,6 +96,7 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
                 R.id.nav_psa_decrypt -> showPsaDecrypt()
                 R.id.nav_file_manager -> showFileManager()
                 R.id.nav_remote_control -> showRemoteControl()
+                R.id.nav_subghz_settings -> showSubGhzSettings()
                 R.id.nav_about -> showAbout()
             }
             drawerLayout.closeDrawer(GravityCompat.START)
@@ -142,6 +145,7 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
         psaFragment = null
         fileManagerFragment = null
         remoteControlFragment = null
+        subGhzSettingsFragment = null
     }
 
     private fun showPsaDecrypt() {
@@ -174,6 +178,16 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
         supportActionBar?.title = "Remote Control"
     }
 
+    private fun showSubGhzSettings() {
+        clearFragmentRefs()
+        val frag = SubGhzSettingsFragment()
+        subGhzSettingsFragment = frag
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, frag)
+            .commit()
+        supportActionBar?.title = "SubGhz Settings"
+    }
+
     private fun showAbout() {
         clearFragmentRefs()
         supportFragmentManager.beginTransaction()
@@ -200,6 +214,7 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
         // Notify active fragments
         fileManagerFragment?.onConnectionChanged(true)
         remoteControlFragment?.onConnectionChanged(true)
+        subGhzSettingsFragment?.onConnectionChanged(true)
     }
 
     private fun stopRpcClient() {
@@ -213,6 +228,7 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
         // Notify active fragments
         fileManagerFragment?.onConnectionChanged(false)
         remoteControlFragment?.onConnectionChanged(false)
+        subGhzSettingsFragment?.onConnectionChanged(false)
     }
 
     // --- Shared log ---

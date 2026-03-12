@@ -11,6 +11,10 @@
             android:icon="@android:drawable/ic_menu_agenda"
             android:title="File Manager" />
         <item
+            android:id="@+id/nav_subghz_settings"
+            android:icon="@android:drawable/ic_menu_manage"
+            android:title="SubGhz Settings" />
+        <item
             android:id="@+id/nav_remote_control"
             android:icon="@android:drawable/ic_menu_view"
             android:title="Remote Control" />
