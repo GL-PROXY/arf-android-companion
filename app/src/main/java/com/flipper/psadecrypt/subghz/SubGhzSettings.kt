@@ -5,7 +5,8 @@ data class SubGhzSettings(
     var defaultFrequency: Long? = null,
     val frequencies: MutableList<Long> = mutableListOf(),
     val hopperFrequencies: MutableList<Long> = mutableListOf(),
-    val customPresets: MutableList<CustomPreset> = mutableListOf()
+    val customPresets: MutableList<CustomPreset> = mutableListOf(),
+    val hoppingPresets: MutableList<String> = mutableListOf()
 )
 
 data class CustomPreset(
@@ -85,6 +86,11 @@ object SubGhzSettingsParser {
                         pendingPresetModule = null
                     }
                 }
+                "Hopping_Preset" -> {
+                    if (value.isNotBlank()) {
+                        settings.hoppingPresets.add(value)
+                    }
+                }
             }
         }
 
@@ -133,6 +139,11 @@ object SubGhzSettingsParser {
             sb.appendLine("Custom_preset_data: ${preset.data}")
             sb.appendLine()
         }
+
+        for (hp in settings.hoppingPresets) {
+            sb.appendLine("Hopping_Preset: $hp")
+        }
+        if (settings.hoppingPresets.isNotEmpty()) sb.appendLine()
 
         return sb.toString()
     }

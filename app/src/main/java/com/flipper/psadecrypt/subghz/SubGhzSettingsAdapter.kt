@@ -16,9 +16,10 @@ sealed class SettingsItem {
     data class ToggleItem(val label: String, val checked: Boolean) : SettingsItem()
     data class FrequencyItem(val hz: Long, val isDefault: Boolean, val isHopper: Boolean) : SettingsItem()
     data class PresetItem(val index: Int, val preset: CustomPreset) : SettingsItem()
+    data class HoppingPresetItem(val index: Int, val name: String) : SettingsItem()
     data class AddButton(val label: String, val type: AddType) : SettingsItem()
 
-    enum class AddType { FREQUENCY, HOPPER, PRESET }
+    enum class AddType { FREQUENCY, HOPPER, PRESET, HOPPING_PRESET }
 }
 
 class SubGhzSettingsAdapter(
@@ -28,7 +29,8 @@ class SubGhzSettingsAdapter(
     private val onDeletePreset: (Int) -> Unit,
     private val onEditPreset: (Int) -> Unit,
     private val onAddClicked: (SettingsItem.AddType) -> Unit,
-    private val onSetDefaultFrequency: (Long?) -> Unit
+    private val onSetDefaultFrequency: (Long?) -> Unit,
+    private val onDeleteHoppingPreset: (Int) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val items = mutableListOf<SettingsItem>()
@@ -41,6 +43,7 @@ class SubGhzSettingsAdapter(
         private const val TYPE_FREQUENCY = 2
         private const val TYPE_PRESET = 3
         private const val TYPE_ADD_BUTTON = 4
+        private const val TYPE_HOPPING_PRESET = 5
     }
 
     fun updateItems(settings: SubGhzSettings) {
@@ -104,6 +107,16 @@ class SubGhzSettingsAdapter(
             list.add(SettingsItem.AddButton("+ Add Preset", SettingsItem.AddType.PRESET))
         }
 
+        // Hopping presets section
+        val hoppingCollapsed = "Hopping Presets" in collapsedSections
+        list.add(SettingsItem.SectionHeader("Hopping Presets", hoppingCollapsed, settings.hoppingPresets.size))
+        if (!hoppingCollapsed) {
+            for ((index, name) in settings.hoppingPresets.withIndex()) {
+                list.add(SettingsItem.HoppingPresetItem(index, name))
+            }
+            list.add(SettingsItem.AddButton("+ Add Hopping Preset", SettingsItem.AddType.HOPPING_PRESET))
+        }
+
         return list
     }
 
@@ -112,6 +125,7 @@ class SubGhzSettingsAdapter(
         is SettingsItem.ToggleItem -> TYPE_TOGGLE
         is SettingsItem.FrequencyItem -> TYPE_FREQUENCY
         is SettingsItem.PresetItem -> TYPE_PRESET
+        is SettingsItem.HoppingPresetItem -> TYPE_HOPPING_PRESET
         is SettingsItem.AddButton -> TYPE_ADD_BUTTON
     }
 
@@ -124,6 +138,7 @@ class SubGhzSettingsAdapter(
             TYPE_TOGGLE -> ToggleVH(inflater.inflate(R.layout.item_subghz_toggle, parent, false))
             TYPE_FREQUENCY -> FrequencyVH(inflater.inflate(R.layout.item_subghz_frequency, parent, false))
             TYPE_PRESET -> PresetVH(inflater.inflate(R.layout.item_subghz_preset, parent, false))
+            TYPE_HOPPING_PRESET -> HoppingPresetVH(inflater.inflate(R.layout.item_subghz_preset, parent, false))
             TYPE_ADD_BUTTON -> AddButtonVH(inflater.inflate(R.layout.item_subghz_add_button, parent, false))
             else -> throw IllegalArgumentException("Unknown viewType $viewType")
         }
@@ -135,6 +150,7 @@ class SubGhzSettingsAdapter(
             is SettingsItem.ToggleItem -> (holder as ToggleVH).bind(item)
             is SettingsItem.FrequencyItem -> (holder as FrequencyVH).bind(item)
             is SettingsItem.PresetItem -> (holder as PresetVH).bind(item)
+            is SettingsItem.HoppingPresetItem -> (holder as HoppingPresetVH).bind(item)
             is SettingsItem.AddButton -> (holder as AddButtonVH).bind(item)
         }
     }
@@ -218,6 +234,27 @@ class SubGhzSettingsAdapter(
                     when (menuItem.itemId) {
                         1 -> { onEditPreset(item.index); true }
                         2 -> { onDeletePreset(item.index); true }
+                        else -> false
+                    }
+                }
+                popup.show()
+            }
+        }
+    }
+
+    inner class HoppingPresetVH(view: View) : RecyclerView.ViewHolder(view) {
+        private val nameText: TextView = view.findViewById(R.id.txt_preset_name)
+        private val moduleText: TextView = view.findViewById(R.id.txt_preset_module)
+        private val moreBtn: ImageButton = view.findViewById(R.id.btn_more)
+        fun bind(item: SettingsItem.HoppingPresetItem) {
+            nameText.text = item.name
+            moduleText.text = "Modulation"
+            moreBtn.setOnClickListener { view ->
+                val popup = PopupMenu(view.context, view)
+                popup.menu.add(0, 1, 0, "Delete")
+                popup.setOnMenuItemClickListener { menuItem ->
+                    when (menuItem.itemId) {
+                        1 -> { onDeleteHoppingPreset(item.index); true }
                         else -> false
                     }
                 }

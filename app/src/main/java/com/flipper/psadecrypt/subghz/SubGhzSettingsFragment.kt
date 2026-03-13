@@ -79,10 +79,15 @@ class SubGhzSettingsFragment : Fragment() {
                     SettingsItem.AddType.FREQUENCY -> showAddFrequencyDialog(isHopper = false)
                     SettingsItem.AddType.HOPPER -> showAddFrequencyDialog(isHopper = true)
                     SettingsItem.AddType.PRESET -> showAddPresetDialog()
+                    SettingsItem.AddType.HOPPING_PRESET -> showAddHoppingPresetDialog()
                 }
             },
             onSetDefaultFrequency = { hz ->
                 settings.defaultFrequency = hz
+                refreshList()
+            },
+            onDeleteHoppingPreset = { index ->
+                settings.hoppingPresets.removeAt(index)
                 refreshList()
             }
         )
@@ -390,6 +395,21 @@ class SubGhzSettingsFragment : Fragment() {
             container.removeView(row)
         }
         container.addView(row)
+    }
+
+    private fun showAddHoppingPresetDialog() {
+        val builtInPresets = listOf("AM270", "AM650", "FM238", "FM476")
+        val customNames = settings.customPresets.map { it.name }
+        val allPresets = (builtInPresets + customNames).distinct().toTypedArray()
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Add Hopping Preset")
+            .setItems(allPresets) { _, which ->
+                settings.hoppingPresets.add(allPresets[which])
+                refreshList()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun confirmDeletePreset(index: Int) {
