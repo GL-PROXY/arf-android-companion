@@ -14,4 +14,5 @@
     <color name="on_primary_container">#FFFFBD7A</color>
     <color name="drawer_bg">#801E1E1E</color>
     <color name="dialog_blur_bg">#CC1A1A2E</color>
+    <color name="nav_indicator_static">#4DFF6F00</color>
 </resources>

@@ -39,6 +39,7 @@
         <item name="materialButtonStyle">@style/DarkButton.Static</item>
         <item name="navigationViewStyle">@style/NavViewStyle.Static</item>
         <item name="materialAlertDialogTheme">@style/M3AlertDialog.Static</item>
+        <item name="colorSecondaryContainer">@color/nav_indicator_static</item>
     </style>
     <style name="DarkButton" parent="Widget.Material3.Button">
         <item name="backgroundTint">?attr/colorPrimary</item>
