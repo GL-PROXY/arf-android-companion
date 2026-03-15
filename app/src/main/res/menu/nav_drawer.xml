@@ -3,30 +3,30 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_psa_decrypt"
-            android:icon="@android:drawable/ic_lock_lock"
+            android:icon="@drawable/ic_nav_decrypt"
             android:title="PSA Decrypt" />
         <item
             android:id="@+id/nav_file_manager"
-            android:icon="@android:drawable/ic_menu_agenda"
+            android:icon="@drawable/ic_nav_files"
             android:title="File Manager" />
         <item
             android:id="@+id/nav_subghz_settings"
-            android:icon="@android:drawable/ic_menu_manage"
+            android:icon="@drawable/ic_nav_subghz"
             android:title="SubGhz Settings" />
         <item
             android:id="@+id/nav_remote_control"
-            android:icon="@android:drawable/ic_menu_view"
+            android:icon="@drawable/ic_nav_remote"
             android:title="Remote Control" />
     </group>
     <item android:title="Other">
         <menu>
             <item
                 android:id="@+id/nav_theme_toggle"
-                android:icon="@android:drawable/ic_menu_compass"
+                android:icon="@drawable/ic_nav_theme"
                 android:title="Toggle Dynamic Color" />
             <item
                 android:id="@+id/nav_about"
-                android:icon="@android:drawable/ic_dialog_info"
+                android:icon="@drawable/ic_nav_about"
                 android:title="About" />
         </menu>
     </item>
