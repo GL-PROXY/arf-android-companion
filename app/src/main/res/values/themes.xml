@@ -1,23 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AppTheme" parent="Theme.MaterialComponents.NoActionBar">
-        <item name="colorPrimary">@color/black</item>
+    <style name="AppTheme" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorOnPrimary">@color/black</item>
+        <item name="colorPrimaryContainer">@color/primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_container</item>
+        <item name="colorSecondary">?attr/colorPrimary</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <item name="colorSecondaryContainer">@color/dark_card</item>
+        <item name="colorOnSecondaryContainer">@color/text_primary</item>
+        <item name="colorSurface">@color/dark_surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorSurfaceVariant">@color/dark_card</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="android:colorBackground">@color/dark_surface</item>
+        <item name="colorOutline">@color/dark_divider</item>
+        <item name="android:colorEdgeEffect">?attr/colorPrimary</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="materialButtonStyle">@style/DarkButton</item>
+        <item name="navigationViewStyle">@style/NavViewStyle</item>
+        <item name="materialAlertDialogTheme">@style/M3AlertDialog</item>
+    </style>
+    <style name="AppTheme.Static" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorPrimary">@color/accent</item>
+        <item name="colorSurface">@color/dark_surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorSurfaceVariant">@color/dark_card</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorOutline">@color/dark_divider</item>
         <item name="colorPrimaryDark">@color/black</item>
         <item name="colorAccent">@color/accent</item>
         <item name="colorSecondary">@color/accent</item>
-        <item name="android:windowBackground">@color/dark_surface</item>
+        <item name="android:colorBackground">@color/dark_surface</item>
         <item name="android:textColorPrimary">@color/text_primary</item>
         <item name="android:textColorSecondary">@color/text_secondary</item>
-        <item name="android:statusBarColor">@color/black</item>
-        <item name="android:navigationBarColor">@color/black</item>
-        <item name="android:colorEdgeEffect">@color/accent</item>
-
-        <!-- Button styling -->
-        <item name="materialButtonStyle">@style/DarkButton</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="materialButtonStyle">@style/DarkButton.Static</item>
+        <item name="navigationViewStyle">@style/NavViewStyle.Static</item>
+        <item name="materialAlertDialogTheme">@style/M3AlertDialog.Static</item>
     </style>
-
-    <style name="DarkButton" parent="Widget.MaterialComponents.Button">
+    <style name="DarkButton" parent="Widget.Material3.Button">
+        <item name="backgroundTint">?attr/colorPrimary</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.App.Button</item>
+    </style>
+    <style name="DarkButton.Static" parent="Widget.MaterialComponents.Button">
         <item name="backgroundTint">@color/accent</item>
         <item name="android:textColor">@color/black</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.App.Button</item>
+    </style>
+    <style name="TextButton" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textColor">?attr/colorPrimary</item>
+    </style>
+    <style name="ShapeAppearance.App.Button" parent="ShapeAppearance.Material3.Corner.Full">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+    <style name="NavViewStyle" parent="Widget.Material3.NavigationView">
+        <item name="itemShapeAppearance">@style/ShapeAppearance.App.Button</item>
+
+    </style>
+    <style name="M3AlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="android:background">@color/dark_card</item>
+    </style>
+    <style name="M3AlertDialog.Static" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorSurface">@color/dark_card</item>
+        <item name="android:background">@color/dark_card</item>
+    </style>
+    <style name="NavViewStyle.Static" parent="Widget.Material3.NavigationView">
+        <item name="itemShapeAppearance">@style/ShapeAppearance.App.Button</item>
+        <item name="itemIconTint">@color/accent</item>
+        <item name="itemTextColor">@color/text_primary</item>
     </style>
 </resources>

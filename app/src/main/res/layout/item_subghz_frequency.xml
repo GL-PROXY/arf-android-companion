@@ -5,12 +5,12 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:background="@color/dark_card">
+    android:background="?attr/colorSurfaceVariant">
 
     <View
         android:layout_width="2dp"
         android:layout_height="match_parent"
-        android:background="@color/accent" />
+        android:background="?attr/colorPrimary" />
 
     <TextView
         android:id="@+id/txt_frequency"
@@ -19,7 +19,7 @@
         android:layout_weight="1"
         android:text="433.920 MHz"
         android:textSize="14sp"
-        android:textColor="@color/text_primary"
+        android:textColor="?attr/colorOnSurface"
         android:fontFamily="monospace"
         android:paddingStart="14dp"
         android:paddingVertical="10dp" />
@@ -30,7 +30,7 @@
         android:layout_height="wrap_content"
         android:text="DEFAULT"
         android:textSize="10sp"
-        android:textColor="@color/accent"
+        android:textColor="?attr/colorPrimary"
         android:paddingHorizontal="6dp"
         android:paddingVertical="2dp"
         android:visibility="gone" />
@@ -43,5 +43,5 @@
         android:src="@android:drawable/ic_menu_close_clear_cancel"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="Remove"
-        app:tint="@color/text_secondary" />
+        app:tint="?attr/colorOnSurfaceVariant" />
 </LinearLayout>

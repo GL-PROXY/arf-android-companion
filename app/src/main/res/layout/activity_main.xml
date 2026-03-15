@@ -6,117 +6,127 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Main content -->
-    <LinearLayout
+    <eightbitlab.com.blurview.BlurTarget
+        android:id="@+id/blur_target"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="@color/dark_surface">
+        android:layout_height="match_parent">
 
-        <!-- Toolbar -->
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/black"
-            app:titleTextColor="@color/text_primary"
-            app:navigationIconTint="@color/accent"
-            app:title="@string/app_name" />
-
-        <!-- BLE status bar -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="6dp"
-            android:background="@color/dark_card">
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="?attr/colorSurface">
 
-            <TextView
-                android:id="@+id/ble_status_text"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Not connected"
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary" />
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="?attr/colorSurface"
+                app:titleTextColor="?attr/colorOnSurface"
+                app:navigationIconTint="?attr/colorPrimary"
+                app:title="@string/app_name" />
 
-            <Spinner
-                android:id="@+id/device_spinner"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:visibility="gone" />
-
-            <Button
-                android:id="@+id/ble_button"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:text="Scan BLE"
-                android:textSize="11sp"
-                android:minWidth="80dp"
-                android:textColor="@color/accent"
-                style="@style/Widget.MaterialComponents.Button.TextButton" />
-        </LinearLayout>
-
-        <!-- Fragment container -->
-        <FrameLayout
-            android:id="@+id/fragment_container"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <!-- Shared collapsible log -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/dark_divider" />
-
-        <TextView
-            android:id="@+id/log_toggle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="▶ Log"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_secondary"
-            android:background="@color/dark_card"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="4dp"
-            android:clickable="true"
-            android:focusable="true" />
-
-        <ScrollView
-            android:id="@+id/log_scroll"
-            android:layout_width="match_parent"
-            android:layout_height="180dp"
-            android:visibility="gone"
-            android:background="@color/log_bg"
-            android:padding="4dp">
-
-            <TextView
-                android:id="@+id/log_text"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text=""
-                android:textSize="11sp"
-                android:fontFamily="monospace"
-                android:textColor="@color/log_text"
-                android:textIsSelectable="true" />
-        </ScrollView>
-    </LinearLayout>
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:background="?attr/colorSurfaceVariant">
 
-    <!-- Navigation drawer -->
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/nav_view"
+                <TextView
+                    android:id="@+id/ble_status_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Not connected"
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                <Spinner
+                    android:id="@+id/device_spinner"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/ble_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="Scan BLE"
+                    android:textSize="11sp"
+                    android:minWidth="80dp"
+                    style="@style/TextButton"
+                    android:textColor="?attr/colorPrimary"
+ />
+            </LinearLayout>
+
+            <FrameLayout
+                android:id="@+id/fragment_container"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?attr/colorOutline" />
+
+            <TextView
+                android:id="@+id/log_toggle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="&#9654; Log"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:background="?attr/colorSurfaceVariant"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="4dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <ScrollView
+                android:id="@+id/log_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                android:visibility="gone"
+                android:background="?attr/colorSurface"
+                android:padding="4dp">
+
+                <TextView
+                    android:id="@+id/log_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="11sp"
+                    android:fontFamily="monospace"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textIsSelectable="true" />
+            </ScrollView>
+        </LinearLayout>
+    </eightbitlab.com.blurview.BlurTarget>
+    <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:background="@color/dark_card"
-        app:itemTextColor="@color/text_primary"
-        app:itemIconTint="@color/accent"
-        app:headerLayout="@layout/nav_header"
-        app:menu="@menu/nav_drawer" />
+        android:layout_gravity="start">
+        <eightbitlab.com.blurview.BlurView
+            android:id="@+id/blur_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#991E1E1E" />
 
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/nav_view"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:background="@android:color/transparent"
+            app:itemTextColor="?attr/colorOnSurfaceVariant"
+
+                        app:headerLayout="@layout/nav_header"
+            app:menu="@menu/nav_drawer" />
+    </FrameLayout>
 </androidx.drawerlayout.widget.DrawerLayout>
