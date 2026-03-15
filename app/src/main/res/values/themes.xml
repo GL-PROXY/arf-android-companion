@@ -62,15 +62,24 @@
 
     </style>
     <style name="M3AlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
-        <item name="android:background">@color/dark_card</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.App.Dialog</item>
+        <item name="android:background">@color/dialog_blur_bg</item>
     </style>
-    <style name="M3AlertDialog.Static" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
-        <item name="colorSurface">@color/dark_card</item>
-        <item name="android:background">@color/dark_card</item>
+    <style name="M3AlertDialog.Static" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.App.Dialog</item>
+        <item name="colorSurface">@color/dialog_blur_bg</item>
+        <item name="android:background">@color/dialog_blur_bg</item>
+        <item name="colorPrimary">@color/accent</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
     </style>
     <style name="NavViewStyle.Static" parent="Widget.Material3.NavigationView">
         <item name="itemShapeAppearance">@style/ShapeAppearance.App.Button</item>
         <item name="itemIconTint">@color/accent</item>
         <item name="itemTextColor">@color/text_primary</item>
+    </style>
+    <style name="ShapeAppearance.App.Dialog" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">8dp</item>
     </style>
 </resources>

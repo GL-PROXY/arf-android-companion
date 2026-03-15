@@ -1,8 +1,8 @@
 package com.flipper.psadecrypt.subghz
 
-import android.app.AlertDialog
-import androidx.appcompat.view.ContextThemeWrapper
 import android.content.ClipboardManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.flipper.psadecrypt.applyBlurBehind
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -192,12 +192,13 @@ class SubGhzSettingsFragment : Fragment() {
 
         val content = SubGhzSettingsParser.serialize(settings)
 
-        val progressDialog = AlertDialog.Builder(requireContext())
+        val progressDialog = MaterialAlertDialogBuilder(requireContext())
             .setTitle("Saving")
             .setMessage("Uploading settings to Flipper...")
             .setCancelable(false)
             .create()
         progressDialog.show()
+        progressDialog.applyBlurBehind()
 
         scope.launch {
             val tempFile = File(requireContext().cacheDir, "setting_user_upload")
@@ -234,7 +235,7 @@ class SubGhzSettingsFragment : Fragment() {
             setPadding(48, 24, 48, 24)
             inputType = android.text.InputType.TYPE_CLASS_NUMBER
         }
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(if (isHopper) "Add Hopper Frequency" else "Add Frequency")
             .setView(input)
             .setPositiveButton("Add") { _, _ ->
@@ -251,7 +252,7 @@ class SubGhzSettingsFragment : Fragment() {
                 refreshList()
             }
             .setNegativeButton("Cancel", null)
-            .show()
+            .show().applyBlurBehind()
     }
 
     private fun showAddPresetDialog() {
@@ -344,7 +345,7 @@ class SubGhzSettingsFragment : Fragment() {
             Toast.makeText(requireContext(), "Pasted ${pastedRegisters.size} registers", Toast.LENGTH_SHORT).show()
         }
 
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(title)
             .setView(dialogView)
             .setPositiveButton("Save") { _, _ ->
@@ -384,7 +385,7 @@ class SubGhzSettingsFragment : Fragment() {
                 onDone(CustomPreset(name, "CC1101", data))
             }
             .setNegativeButton("Cancel", null)
-            .show()
+            .show().applyBlurBehind()
     }
 
     private fun addRegisterRow(container: LinearLayout, addr: String, value: String) {
@@ -403,19 +404,19 @@ class SubGhzSettingsFragment : Fragment() {
         val customNames = settings.customPresets.map { it.name }
         val allPresets = (builtInPresets + customNames).distinct().toTypedArray()
 
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle("Add Hopping Preset")
             .setItems(allPresets) { _, which ->
                 settings.hoppingPresets.add(allPresets[which])
                 refreshList()
             }
             .setNegativeButton("Cancel", null)
-            .show()
+            .show().applyBlurBehind()
     }
 
     private fun confirmDeletePreset(index: Int) {
         val preset = settings.customPresets.getOrNull(index) ?: return
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle("Delete Preset")
             .setMessage("Delete preset \"${preset.name}\"?")
             .setPositiveButton("Delete") { _, _ ->
@@ -423,7 +424,7 @@ class SubGhzSettingsFragment : Fragment() {
                 refreshList()
             }
             .setNegativeButton("Cancel", null)
-            .show()
+            .show().applyBlurBehind()
     }
 
     private fun log(msg: String) {

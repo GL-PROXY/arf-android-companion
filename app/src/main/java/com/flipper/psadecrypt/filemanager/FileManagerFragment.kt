@@ -1,8 +1,8 @@
 package com.flipper.psadecrypt.filemanager
 
-import android.app.AlertDialog
-import androidx.appcompat.view.ContextThemeWrapper
 import android.net.Uri
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.flipper.psadecrypt.applyBlurBehind
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -185,12 +185,13 @@ class FileManagerFragment : Fragment() {
 
         val flipperPath = "$currentPath/${file.name}"
 
-        val progressDialog = AlertDialog.Builder(requireContext())
+        val progressDialog = MaterialAlertDialogBuilder(requireContext())
             .setTitle("Downloading")
             .setMessage("${file.name}\n0 / ${formatSize(file.size)}")
             .setCancelable(false)
             .create()
         progressDialog.show()
+        progressDialog.applyBlurBehind()
 
         scope.launch {
             val tempFile = java.io.File(requireContext().cacheDir, "download_tmp_${System.currentTimeMillis()}")
@@ -244,12 +245,13 @@ class FileManagerFragment : Fragment() {
 
         val flipperPath = "$currentPath/$fileName"
 
-        val progressDialog = AlertDialog.Builder(ctx)
+        val progressDialog = MaterialAlertDialogBuilder(ctx)
             .setTitle("Uploading")
             .setMessage(fileName)
             .setCancelable(false)
             .create()
         progressDialog.show()
+        progressDialog.applyBlurBehind()
 
         scope.launch {
             val tempFile = java.io.File(ctx.cacheDir, "upload_tmp_${System.currentTimeMillis()}")
@@ -283,12 +285,12 @@ class FileManagerFragment : Fragment() {
     // --- Delete ---
 
     private fun confirmDelete(file: FlipperFile) {
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle("Delete")
             .setMessage("Delete ${if (file.isDirectory) "folder" else "file"} \"${file.name}\"?")
             .setPositiveButton("Delete") { _, _ -> doDelete(file) }
             .setNegativeButton("Cancel", null)
-            .show()
+            .show().applyBlurBehind()
     }
 
     private fun doDelete(file: FlipperFile) {
@@ -317,7 +319,7 @@ class FileManagerFragment : Fragment() {
             hint = "Folder name"
             setPadding(48, 24, 48, 24)
         }
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle("Create Folder")
             .setView(input)
             .setPositiveButton("Create") { _, _ ->
@@ -325,7 +327,7 @@ class FileManagerFragment : Fragment() {
                 if (name.isNotEmpty()) doMkdir(name)
             }
             .setNegativeButton("Cancel", null)
-            .show()
+            .show().applyBlurBehind()
     }
 
     private fun doMkdir(name: String) {
