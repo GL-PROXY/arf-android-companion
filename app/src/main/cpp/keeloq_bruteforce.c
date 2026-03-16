@@ -1,6 +1,9 @@
 #include <jni.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <sched.h>
+#include <unistd.h>
 
 #define KLQ_NLF 0x3A5C742EU
 #define bit(x, n) (((x) >> (n)) & 1)
@@ -10,6 +13,55 @@
 #define MAX_BF_THREADS 16
 static volatile int32_t g_keys_tested[MAX_BF_THREADS];
 static volatile int32_t g_cancel[MAX_BF_THREADS];
+
+static int g_big_cores[MAX_BF_THREADS];
+static int g_num_big_cores = 0;
+static int g_cores_detected = 0;
+
+static void detect_big_cores(void) {
+    if (g_cores_detected) return;
+    int ncpus = sysconf(_SC_NPROCESSORS_CONF);
+    if (ncpus <= 0 || ncpus > MAX_BF_THREADS) ncpus = MAX_BF_THREADS;
+
+    uint32_t max_freq[MAX_BF_THREADS];
+    uint32_t highest = 0;
+
+    for (int i = 0; i < ncpus; i++) {
+        char path[128];
+        snprintf(path, sizeof(path),
+            "/sys/devices/system/cpu/cpu%d/cpufreq/cpuinfo_max_freq", i);
+        FILE* f = fopen(path, "r");
+        if (f) {
+            fscanf(f, "%u", &max_freq[i]);
+            fclose(f);
+            if (max_freq[i] > highest) highest = max_freq[i];
+        } else {
+            max_freq[i] = 0;
+        }
+    }
+
+    g_num_big_cores = 0;
+    uint32_t threshold = highest * 8 / 10;
+    for (int i = 0; i < ncpus; i++) {
+        if (max_freq[i] >= threshold) {
+            g_big_cores[g_num_big_cores++] = i;
+        }
+    }
+    if (g_num_big_cores == 0) {
+        for (int i = 0; i < ncpus; i++)
+            g_big_cores[g_num_big_cores++] = i;
+    }
+    g_cores_detected = 1;
+}
+
+static void pin_to_big_core(int thread_idx) {
+    detect_big_cores();
+    int core = g_big_cores[thread_idx % g_num_big_cores];
+    cpu_set_t set;
+    CPU_ZERO(&set);
+    CPU_SET(core, &set);
+    sched_setaffinity(0, sizeof(set), &set);
+}
 
 static uint32_t keeloq_decrypt(uint32_t data, uint64_t key) {
     uint32_t x = data;
@@ -184,6 +236,14 @@ Java_com_flipper_psadecrypt_KeeloqBruteForce_nativeSetCancel(
 }
 
 JNIEXPORT jint JNICALL
+Java_com_flipper_psadecrypt_KeeloqBruteForce_nativeGetBigCoreCount(
+    JNIEnv* env, jobject thiz)
+{
+    detect_big_cores();
+    return (jint)g_num_big_cores;
+}
+
+JNIEXPORT jint JNICALL
 Java_com_flipper_psadecrypt_KeeloqBruteForce_nativeGetKeysTested(
     JNIEnv* env, jobject thiz, jint thread_idx)
 {
@@ -203,6 +263,8 @@ Java_com_flipper_psadecrypt_KeeloqBruteForce_nativeBruteForce(
     jint thread_idx,
     jlongArray result_out)
 {
+    pin_to_big_core(thread_idx);
+
     uint8_t btn = ((uint32_t)fix) >> 28;
     uint16_t disc = ((uint32_t)serial) & 0x3FF;
 

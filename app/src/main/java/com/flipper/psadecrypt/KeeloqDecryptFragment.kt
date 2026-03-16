@@ -27,6 +27,9 @@ class KeeloqDecryptFragment : Fragment() {
     private lateinit var hop1Input: EditText
     private lateinit var hop2Input: EditText
     private lateinit var typeSpinner: Spinner
+    private lateinit var coreSpinner: Spinner
+    private var coreOptions = mutableListOf<String>()
+    private var coreValues = mutableListOf<Int>()
 
     private val handler = Handler(Looper.getMainLooper())
     var bfExecutor: KeeloqBfExecutor? = null
@@ -54,16 +57,44 @@ class KeeloqDecryptFragment : Fragment() {
         hop1Input = view.findViewById(R.id.kl_hop1_input)
         hop2Input = view.findViewById(R.id.kl_hop2_input)
         typeSpinner = view.findViewById(R.id.kl_type_spinner)
+        coreSpinner = view.findViewById(R.id.kl_core_spinner)
 
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, LEARN_TYPES)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         typeSpinner.adapter = adapter
 
+        val probe = KeeloqBfExecutor(1)
+        val bigCores = probe.bigCoreCount
+        val totalCores = probe.totalCoreCount
+        probe.shutdown()
+
+        coreOptions.clear()
+        coreValues.clear()
+        coreOptions.add("Big cores ($bigCores)")
+        coreValues.add(bigCores)
+        if (totalCores != bigCores) {
+            coreOptions.add("All cores ($totalCores)")
+            coreValues.add(totalCores)
+        }
+        for (n in 1..totalCores) {
+            if (n != bigCores && n != totalCores) {
+                coreOptions.add("$n cores")
+                coreValues.add(n)
+            }
+        }
+        val coreAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, coreOptions)
+        coreAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        coreSpinner.adapter = coreAdapter
+
         runButton.setOnClickListener { runManualBf() }
         benchButton.setOnClickListener { runBenchmark() }
 
-        val cpuCount = Runtime.getRuntime().availableProcessors()
-        statusText.text = "Ready — $cpuCount CPU cores"
+        statusText.text = "Ready — $bigCores big / $totalCores total cores"
+    }
+
+    private fun selectedCoreCount(): Int {
+        val idx = coreSpinner.selectedItemPosition
+        return if (idx >= 0 && idx < coreValues.size) coreValues[idx] else 0
     }
 
     private fun parseHex(s: String): Int? {
@@ -95,12 +126,13 @@ class KeeloqDecryptFragment : Fragment() {
     }
 
     private fun runAutoSequence(serial: Int, fix: Int, hop1: Int, hop2: Int) {
+        val cores = selectedCoreCount()
         Thread {
             for (type in intArrayOf(6, 7, 8)) {
                 if (bfExecutor?.let { false } ?: false) break
                 handler.post { statusText.text = "Trying Type $type (2^32)..." }
 
-                val executor = KeeloqBfExecutor()
+                val executor = KeeloqBfExecutor(cores)
                 bfExecutor = executor
                 bfStartTime = System.currentTimeMillis()
                 handler.post { startProgressPolling(executor, TOTAL_32BIT) }
@@ -137,11 +169,12 @@ class KeeloqDecryptFragment : Fragment() {
     }
 
     private fun runSingleType(learnType: Int, serial: Int, fix: Int, hop1: Int, hop2: Int) {
-        statusText.text = "Running Type $learnType on ${Runtime.getRuntime().availableProcessors()} cores..."
+        val cores = selectedCoreCount()
+        statusText.text = "Running Type $learnType on $cores cores..."
         progressBar.progress = 0
         resultText.text = ""
 
-        val executor = KeeloqBfExecutor()
+        val executor = KeeloqBfExecutor(cores)
         bfExecutor = executor
         bfStartTime = System.currentTimeMillis()
         startProgressPolling(executor, TOTAL_32BIT)
@@ -218,7 +251,7 @@ class KeeloqDecryptFragment : Fragment() {
         resultText.text = ""
         setButtonsEnabled(false)
 
-        val executor = KeeloqBfExecutor()
+        val executor = KeeloqBfExecutor(selectedCoreCount())
         bfExecutor = executor
         bfStartTime = System.currentTimeMillis()
         startProgressPolling(executor, 0x100000L)

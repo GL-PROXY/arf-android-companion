@@ -13,11 +13,13 @@ data class KlBfResult(
     val learnType: Int = 0
 )
 
-class KeeloqBfExecutor {
-    private val numThreads = Runtime.getRuntime().availableProcessors().coerceIn(1, 8)
+class KeeloqBfExecutor(threadCount: Int = 0) {
+    private val bf = KeeloqBruteForce()
+    val bigCoreCount = bf.nativeGetBigCoreCount().coerceIn(1, 16)
+    val totalCoreCount = Runtime.getRuntime().availableProcessors()
+    private val numThreads = if (threadCount > 0) threadCount.coerceIn(1, 16) else bigCoreCount
     private val executor = Executors.newFixedThreadPool(numThreads)
     private val cancelled = AtomicBoolean(false)
-    private val bf = KeeloqBruteForce()
 
     fun getTotalKeysTested(): Long {
         var sum = 0L

@@ -19,4 +19,5 @@ class KeeloqBruteForce {
     external fun nativeResetThread(threadIdx: Int)
     external fun nativeSetCancel(threadIdx: Int)
     external fun nativeGetKeysTested(threadIdx: Int): Int
+    external fun nativeGetBigCoreCount(): Int
 }
