@@ -73,6 +73,7 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
 
     // Current fragment
     private var psaFragment: PsaDecryptFragment? = null
+    private var keeloqFragment: KeeloqDecryptFragment? = null
     private var fileManagerFragment: FileManagerFragment? = null
     private var remoteControlFragment: RemoteControlFragment? = null
     private var subGhzSettingsFragment: SubGhzSettingsFragment? = null
@@ -124,6 +125,7 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
         navView.setNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_psa_decrypt -> showPsaDecrypt()
+                R.id.nav_keeloq_decrypt -> showKeeloqDecrypt()
                 R.id.nav_file_manager -> showFileManager()
                 R.id.nav_remote_control -> showRemoteControl()
                 R.id.nav_subghz_settings -> showSubGhzSettings()
@@ -197,6 +199,7 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
 
     private fun clearFragmentRefs() {
         psaFragment = null
+        keeloqFragment = null
         fileManagerFragment = null
         remoteControlFragment = null
         subGhzSettingsFragment = null
@@ -210,6 +213,16 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
             .replace(R.id.fragment_container, frag)
             .commit()
         supportActionBar?.title = "PSA Decrypt"
+    }
+
+    private fun showKeeloqDecrypt() {
+        clearFragmentRefs()
+        val frag = KeeloqDecryptFragment()
+        keeloqFragment = frag
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, frag)
+            .commit()
+        supportActionBar?.title = "KeeLoq Decrypt"
     }
 
     private fun showFileManager() {
@@ -462,6 +475,7 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
         appendLog("Disconnected from Flipper")
         bleStatusText.text = "Disconnected"
         psaFragment?.bfExecutor?.cancel()
+        keeloqFragment?.bfExecutor?.cancel()
         bleButton.text = "Scan BLE"
         bleButton.setOnClickListener { requestPermissionsAndScan() }
         deviceSpinner.visibility = View.GONE
@@ -473,7 +487,15 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
 
     override fun onDataReceived(data: ByteArray) {
         appendLog("BLE data received: ${data.size} bytes, type=0x${String.format("%02X", data[0])}")
-        psaFragment?.handleBleData(data)
+        if (KeeloqBleProtocol.isKeeloqMessage(data)) {
+            if (keeloqFragment == null) {
+                showKeeloqDecrypt()
+                navView.setCheckedItem(R.id.nav_keeloq_decrypt)
+            }
+            handler.postDelayed({ keeloqFragment?.handleBleData(data) }, 100)
+        } else {
+            psaFragment?.handleBleData(data)
+        }
     }
 
     // --- Lifecycle ---
@@ -490,6 +512,7 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
     override fun onDestroy() {
         super.onDestroy()
         psaFragment?.bfExecutor?.cancel()
+        keeloqFragment?.bfExecutor?.cancel()
         stopRpcClient()
         bleClient.disconnect()
         BleKeepAliveService.stop(this)

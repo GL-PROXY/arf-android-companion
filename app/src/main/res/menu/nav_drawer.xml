@@ -6,6 +6,10 @@
             android:icon="@drawable/ic_nav_decrypt"
             android:title="PSA Decrypt" />
         <item
+            android:id="@+id/nav_keeloq_decrypt"
+            android:icon="@drawable/ic_nav_keeloq"
+            android:title="KeeLoq Decrypt" />
+        <item
             android:id="@+id/nav_file_manager"
             android:icon="@drawable/ic_nav_files"
             android:title="File Manager" />
