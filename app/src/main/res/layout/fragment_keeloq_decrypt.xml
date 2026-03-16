@@ -175,6 +175,14 @@
                 android:fontFamily="monospace"
                 android:textColor="?attr/colorPrimary"
                 android:textIsSelectable="true" />
+            <TextView
+                android:id="@+id/kl_disclaimer_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Speed varies due to CPU thermal throttling. An initial burst followed by a slowdown is normal."
+                android:textSize="11sp"
+                android:textColor="?attr/colorOutline"
+                android:layout_marginTop="8dp" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

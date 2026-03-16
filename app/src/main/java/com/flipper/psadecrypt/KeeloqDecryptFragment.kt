@@ -128,6 +128,7 @@ class KeeloqDecryptFragment : Fragment() {
                 resultText.text = ""
                 progressBar.progress = 100
                 setButtonsEnabled(true)
+                context?.let { BleKeepAliveService.clearBfProgress(it) }
             }
             val notFound = KlBfResult(found = false, elapsedMs = 0)
             mainActivity?.sendBleData(KeeloqBleProtocol.encodeResult(notFound))
@@ -208,6 +209,7 @@ class KeeloqDecryptFragment : Fragment() {
             resultText.text = ""
         }
         progressBar.progress = 100
+        context?.let { BleKeepAliveService.clearBfProgress(it) }
     }
 
     private fun runBenchmark() {
@@ -252,9 +254,11 @@ class KeeloqDecryptFragment : Fragment() {
 
                 progressBar.progress = pct
                 progressText.text = "$pct% — ${formatCount(tested)} / ${formatCount(totalKeys)}"
-                speedText.text = "${formatCount(kps)} keys/sec"
+                val kpsStr = "${formatCount(kps)} keys/sec"
+                speedText.text = kpsStr
 
                 mainActivity?.sendBleData(KeeloqBleProtocol.encodeProgress(0, (tested and 0xFFFFFFFFL).toInt(), kps.toInt()))
+                context?.let { BleKeepAliveService.updateBfProgress(it, pct, "${formatCount(kps)}") }
                 handler.postDelayed(this, 500)
             }
         }

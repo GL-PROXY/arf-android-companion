@@ -24,6 +24,45 @@ class BleKeepAliveService : Service() {
         fun stop(context: Context) {
             context.stopService(Intent(context, BleKeepAliveService::class.java))
         }
+
+        fun updateBfProgress(context: Context, pct: Int, kps: String) {
+            val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val tapIntent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+            val pendingIntent = PendingIntent.getActivity(
+                context, 0, tapIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+            val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setContentTitle("KeeLoq BF — $pct%")
+                .setContentText("$kps keys/sec")
+                .setSmallIcon(android.R.drawable.stat_sys_data_bluetooth)
+                .setOngoing(true)
+                .setContentIntent(pendingIntent)
+                .setProgress(100, pct, false)
+                .build()
+            nm.notify(NOTIFICATION_ID, notification)
+        }
+
+        fun clearBfProgress(context: Context) {
+            val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val tapIntent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+            val pendingIntent = PendingIntent.getActivity(
+                context, 0, tapIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+            val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setContentTitle("ARF Companion")
+                .setContentText("Connected to Flipper — BLE active")
+                .setSmallIcon(android.R.drawable.stat_sys_data_bluetooth)
+                .setOngoing(true)
+                .setContentIntent(pendingIntent)
+                .build()
+            nm.notify(NOTIFICATION_ID, notification)
+        }
     }
 
     override fun onCreate() {
@@ -41,7 +80,7 @@ class BleKeepAliveService : Service() {
         )
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("PSA Decrypt")
+            .setContentTitle("ARF Companion")
             .setContentText("Connected to Flipper — BLE active")
             .setSmallIcon(android.R.drawable.stat_sys_data_bluetooth)
             .setOngoing(true)
