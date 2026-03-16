@@ -282,8 +282,10 @@ class PsaDecryptFragment : Fragment() {
     }
 
     private fun stopProgressPolling() {
-        progressRunnable?.let { handler.removeCallbacks(it) }
-        progressRunnable = null
+        handler.post {
+            progressRunnable?.let { handler.removeCallbacks(it) }
+            progressRunnable = null
+        }
     }
 
     private fun formatCount(n: Int): String {

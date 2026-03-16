@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <jni.h>
 #include <stdint.h>
 #include <stdbool.h>
