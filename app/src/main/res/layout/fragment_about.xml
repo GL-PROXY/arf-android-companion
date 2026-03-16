@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dark_surface">
+    android:background="?attr/colorSurface">
 
 <LinearLayout
     android:layout_width="match_parent"
@@ -24,7 +24,7 @@
         android:text="ARF Companion"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:textColor="@color/text_primary"
+        android:textColor="?attr/colorOnSurface"
         android:layout_marginBottom="8dp" />
 
     <TextView
@@ -32,7 +32,7 @@
         android:layout_height="wrap_content"
         android:text="v1.0"
         android:textSize="14sp"
-        android:textColor="@color/text_secondary"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:layout_marginBottom="16dp" />
 
     <TextView
@@ -42,12 +42,12 @@
         android:lineSpacingExtra="4dp"
         android:text="Companion app for ARF Firmware\nCrypto offloader/settings manager for the ARF Firmware."
         android:textSize="14sp"
-        android:textColor="@color/text_primary" />
+        android:textColor="?attr/colorOnSurface" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/dark_divider"
+        android:background="?attr/colorOutline"
         android:layout_marginBottom="16dp" />
 
     <TextView
@@ -57,13 +57,13 @@
         android:lineSpacingExtra="4dp"
         android:text="Firmware:\nhttps://github.com/D4C1-Labs/Flipper-ARF\n\nCompanion App:\nhttps://github.com/D4C1-Labs/arf-android-companion"
         android:textSize="13sp"
-        android:textColor="@color/accent"
+        android:textColor="?attr/colorPrimary"
         android:autoLink="web" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/dark_divider"
+        android:background="?attr/colorOutline"
         android:layout_marginBottom="16dp" />
 
     <TextView
@@ -71,7 +71,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="Built by luhf for ARF Firmware\nARF Firmware by D4rk$1d3, luhf, 47LeCoste, DACI\n[and many others]"
-        android:textColor="@color/text_secondary"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="12sp" />
 
 </LinearLayout>

@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/dark_surface">
+    android:background="?attr/colorSurface">
 
     <!-- Current path bar -->
     <LinearLayout
@@ -14,7 +14,7 @@
         android:gravity="center_vertical"
         android:paddingHorizontal="8dp"
         android:paddingVertical="6dp"
-        android:background="@color/dark_card">
+        android:background="?attr/colorSurfaceVariant">
 
         <ImageButton
             android:id="@+id/btn_up"
@@ -23,7 +23,7 @@
             android:src="@android:drawable/ic_menu_revert"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Go up"
-            app:tint="@color/accent" />
+            app:tint="?attr/colorPrimary" />
 
         <TextView
             android:id="@+id/txt_current_path"
@@ -32,7 +32,7 @@
             android:layout_weight="1"
             android:text="/ext"
             android:textSize="13sp"
-            android:textColor="@color/text_secondary"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:fontFamily="monospace"
             android:paddingStart="8dp"
             android:singleLine="true"
@@ -45,13 +45,13 @@
             android:src="@android:drawable/ic_popup_sync"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Refresh"
-            app:tint="@color/text_secondary" />
+            app:tint="?attr/colorOnSurfaceVariant" />
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/dark_divider" />
+        android:background="?attr/colorOutline" />
 
     <!-- Not connected overlay -->
     <TextView
@@ -60,7 +60,7 @@
         android:layout_height="match_parent"
         android:text="Connect to Flipper via BLE first"
         android:textSize="14sp"
-        android:textColor="@color/text_secondary"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:gravity="center"
         android:visibility="gone" />
 
@@ -102,7 +102,7 @@
         android:orientation="horizontal"
         android:gravity="center"
         android:padding="8dp"
-        android:background="@color/dark_card">
+        android:background="?attr/colorSurfaceVariant">
 
         <Button
             android:id="@+id/btn_upload"
@@ -112,8 +112,8 @@
             android:layout_marginEnd="4dp"
             android:text="Upload File"
             android:textSize="12sp"
-            android:textColor="@color/accent"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+
+ />
 
         <Button
             android:id="@+id/btn_mkdir"
@@ -123,8 +123,8 @@
             android:layout_marginStart="4dp"
             android:text="New Folder"
             android:textSize="12sp"
-            android:textColor="@color/accent"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+
+ />
     </LinearLayout>
 
 </LinearLayout>

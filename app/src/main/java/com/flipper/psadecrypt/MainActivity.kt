@@ -6,6 +6,7 @@ import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -13,12 +14,16 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.flipper.psadecrypt.filemanager.FileManagerFragment
 import com.flipper.psadecrypt.remotecontrol.RemoteControlFragment
@@ -74,7 +79,32 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val prefs = getSharedPreferences("settings", MODE_PRIVATE)
+        if (!prefs.getBoolean("dynamic_color", true)) {
+            setTheme(R.style.AppTheme_Static)
+        }
         setContentView(R.layout.activity_main)
+        val blurView = findViewById<eightbitlab.com.blurview.BlurView>(R.id.blur_view)
+        val blurTarget = findViewById<eightbitlab.com.blurview.BlurTarget>(R.id.blur_target)
+        blurView.setupWith(blurTarget).setBlurRadius(20f)
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.toolbar)) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val params = view.layoutParams as ViewGroup.MarginLayoutParams
+            params.topMargin = systemBars.top
+            view.layoutParams = params
+            insets
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.log_toggle)) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(12, 0, 12, systemBars.bottom + 8)
+            insets
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.nav_view)) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(0, systemBars.top, 0, systemBars.bottom)
+            insets
+        }
 
         // Toolbar
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
@@ -98,6 +128,17 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
                 R.id.nav_remote_control -> showRemoteControl()
                 R.id.nav_subghz_settings -> showSubGhzSettings()
                 R.id.nav_about -> showAbout()
+                R.id.nav_theme_toggle -> {
+                    val p = getSharedPreferences("settings", MODE_PRIVATE)
+                    p.edit().putBoolean("dynamic_color", !p.getBoolean("dynamic_color", true)).apply()
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    drawerLayout.postDelayed({
+                        val intent = packageManager.getLaunchIntentForPackage(packageName)!!
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                        startActivity(intent)
+                        kotlin.system.exitProcess(0)
+                    }, 300)
+                }
             }
             drawerLayout.closeDrawer(GravityCompat.START)
             true
@@ -128,6 +169,19 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
         // BLE client
         bleClient = FlipperBleClient(this)
         bleClient.listener = this
+
+        // Auto-reconnect to last device
+        val lastAddress = getSharedPreferences("settings", MODE_PRIVATE)
+            .getString("last_device", null)
+        if (lastAddress != null) {
+            val btManager = getSystemService(BLUETOOTH_SERVICE) as android.bluetooth.BluetoothManager
+            val device = btManager.adapter?.bondedDevices?.find { it.address == lastAddress }
+            if (device != null) {
+                appendLog("Auto-connecting to last device: ${device.name}")
+                bleStatusText.text = "Auto-connecting..."
+                bleClient.connect(device)
+            }
+        }
 
         // Default fragment
         if (savedInstanceState == null) {
@@ -391,6 +445,8 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
     }
 
     override fun onConnected() {
+        getSharedPreferences("settings", MODE_PRIVATE).edit()
+            .putString("last_device", bleClient.lastConnectedAddress).apply()
         appendLog("Connected to Flipper")
         bleStatusText.text = "Connected"
         bleButton.text = "Disconnect"
