@@ -7,6 +7,10 @@
 #define g5(x, a, b, c, d, e) \
     (bit(x,a) + bit(x,b)*2 + bit(x,c)*4 + bit(x,d)*8 + bit(x,e)*16)
 
+#define MAX_BF_THREADS 16
+static volatile int32_t g_keys_tested[MAX_BF_THREADS];
+static volatile int32_t g_cancel[MAX_BF_THREADS];
+
 static uint32_t keeloq_decrypt(uint32_t data, uint64_t key) {
     uint32_t x = data;
     for (int r = 0; r < 528; r++) {
@@ -29,7 +33,7 @@ static bool brute_type6(
     uint32_t serial, uint32_t hop1, uint32_t hop2,
     uint8_t btn, uint16_t disc,
     uint32_t range_start, uint32_t range_end,
-    volatile int* cancel, int* keys_tested,
+    int thread_idx,
     uint64_t* out_man, uint64_t* out_devkey, uint32_t* out_cnt)
 {
     uint64_t upper = ((uint64_t)(serial & 0x00FFFFFF) << 40)
@@ -37,13 +41,14 @@ static bool brute_type6(
 
     for (uint64_t man_lo = (uint64_t)(range_start & 0xFFFFFFFFULL);
          man_lo < (uint64_t)(range_end & 0xFFFFFFFFULL); man_lo++) {
-        if (*cancel) return false;
+        if (g_cancel[thread_idx]) return false;
 
         uint64_t devkey = upper | (uint32_t)man_lo;
         uint32_t dec1 = keeloq_decrypt(hop1, devkey);
 
         if (!validate_hop(dec1, btn, disc)) {
-            if ((man_lo & 0xFFFF) == 0) *keys_tested = (int)(man_lo - (range_start & 0xFFFFFFFFULL));
+            if ((man_lo & 0xFFFF) == 0)
+                g_keys_tested[thread_idx] = (int32_t)(man_lo - (range_start & 0xFFFFFFFFULL));
             continue;
         }
 
@@ -59,9 +64,10 @@ static bool brute_type6(
                 return true;
             }
         }
-        if ((man_lo & 0xFFFF) == 0) *keys_tested = (int)(man_lo - (range_start & 0xFFFFFFFFULL));
+        if ((man_lo & 0xFFFF) == 0)
+            g_keys_tested[thread_idx] = (int32_t)(man_lo - (range_start & 0xFFFFFFFFULL));
     }
-    *keys_tested = (int)((range_end & 0xFFFFFFFFULL) - (range_start & 0xFFFFFFFFULL));
+    g_keys_tested[thread_idx] = (int32_t)((range_end & 0xFFFFFFFFULL) - (range_start & 0xFFFFFFFFULL));
     return false;
 }
 
@@ -69,7 +75,7 @@ static bool brute_type7(
     uint32_t serial, uint32_t fix, uint32_t hop1, uint32_t hop2,
     uint8_t btn, uint16_t disc,
     uint32_t range_start, uint32_t range_end,
-    volatile int* cancel, int* keys_tested,
+    int thread_idx,
     uint64_t* out_man, uint64_t* out_devkey, uint32_t* out_cnt)
 {
     uint8_t s0 = fix & 0xFF;
@@ -79,7 +85,7 @@ static bool brute_type7(
 
     for (uint64_t man_lo = (uint64_t)(range_start & 0xFFFFFFFFULL);
          man_lo < (uint64_t)(range_end & 0xFFFFFFFFULL); man_lo++) {
-        if (*cancel) return false;
+        if (g_cancel[thread_idx]) return false;
 
         uint64_t man = (uint32_t)man_lo;
         uint8_t* m = (uint8_t*)&man;
@@ -92,7 +98,8 @@ static bool brute_type7(
         uint32_t dec1 = keeloq_decrypt(hop1, devkey);
 
         if (!validate_hop(dec1, btn, disc)) {
-            if ((man_lo & 0xFFFF) == 0) *keys_tested = (int)(man_lo - (range_start & 0xFFFFFFFFULL));
+            if ((man_lo & 0xFFFF) == 0)
+                g_keys_tested[thread_idx] = (int32_t)(man_lo - (range_start & 0xFFFFFFFFULL));
             continue;
         }
 
@@ -108,9 +115,10 @@ static bool brute_type7(
                 return true;
             }
         }
-        if ((man_lo & 0xFFFF) == 0) *keys_tested = (int)(man_lo - (range_start & 0xFFFFFFFFULL));
+        if ((man_lo & 0xFFFF) == 0)
+            g_keys_tested[thread_idx] = (int32_t)(man_lo - (range_start & 0xFFFFFFFFULL));
     }
-    *keys_tested = (int)((range_end & 0xFFFFFFFFULL) - (range_start & 0xFFFFFFFFULL));
+    g_keys_tested[thread_idx] = (int32_t)((range_end & 0xFFFFFFFFULL) - (range_start & 0xFFFFFFFFULL));
     return false;
 }
 
@@ -118,21 +126,22 @@ static bool brute_type8(
     uint32_t serial, uint32_t hop1, uint32_t hop2,
     uint8_t btn, uint16_t disc,
     uint32_t range_start, uint32_t range_end,
-    volatile int* cancel, int* keys_tested,
+    int thread_idx,
     uint64_t* out_man, uint64_t* out_devkey, uint32_t* out_cnt)
 {
     uint32_t serial_lo24 = serial & 0xFFFFFF;
 
     for (uint64_t upper = (uint64_t)(range_start & 0xFFFFFFFFULL);
          upper < (uint64_t)(range_end & 0xFFFFFFFFULL); upper++) {
-        if (*cancel) return false;
+        if (g_cancel[thread_idx]) return false;
 
         uint64_t man = (upper << 24) | serial_lo24;
         uint64_t devkey = man;
         uint32_t dec1 = keeloq_decrypt(hop1, devkey);
 
         if (!validate_hop(dec1, btn, disc)) {
-            if ((upper & 0xFFFF) == 0) *keys_tested = (int)(upper - (range_start & 0xFFFFFFFFULL));
+            if ((upper & 0xFFFF) == 0)
+                g_keys_tested[thread_idx] = (int32_t)(upper - (range_start & 0xFFFFFFFFULL));
             continue;
         }
 
@@ -148,10 +157,40 @@ static bool brute_type8(
                 return true;
             }
         }
-        if ((upper & 0xFFFF) == 0) *keys_tested = (int)(upper - (range_start & 0xFFFFFFFFULL));
+        if ((upper & 0xFFFF) == 0)
+            g_keys_tested[thread_idx] = (int32_t)(upper - (range_start & 0xFFFFFFFFULL));
     }
-    *keys_tested = (int)((range_end & 0xFFFFFFFFULL) - (range_start & 0xFFFFFFFFULL));
+    g_keys_tested[thread_idx] = (int32_t)((range_end & 0xFFFFFFFFULL) - (range_start & 0xFFFFFFFFULL));
     return false;
+}
+
+JNIEXPORT void JNICALL
+Java_com_flipper_psadecrypt_KeeloqBruteForce_nativeResetThread(
+    JNIEnv* env, jobject thiz, jint thread_idx)
+{
+    if (thread_idx >= 0 && thread_idx < MAX_BF_THREADS) {
+        g_keys_tested[thread_idx] = 0;
+        g_cancel[thread_idx] = 0;
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_flipper_psadecrypt_KeeloqBruteForce_nativeSetCancel(
+    JNIEnv* env, jobject thiz, jint thread_idx)
+{
+    if (thread_idx >= 0 && thread_idx < MAX_BF_THREADS) {
+        g_cancel[thread_idx] = 1;
+    }
+}
+
+JNIEXPORT jint JNICALL
+Java_com_flipper_psadecrypt_KeeloqBruteForce_nativeGetKeysTested(
+    JNIEnv* env, jobject thiz, jint thread_idx)
+{
+    if (thread_idx >= 0 && thread_idx < MAX_BF_THREADS) {
+        return (jint)g_keys_tested[thread_idx];
+    }
+    return 0;
 }
 
 JNIEXPORT jboolean JNICALL
@@ -161,13 +200,9 @@ Java_com_flipper_psadecrypt_KeeloqBruteForce_nativeBruteForce(
     jint serial, jint fix,
     jint hop1, jint hop2,
     jint range_start, jint range_end,
-    jintArray cancel_flag_arr,
-    jintArray keys_tested_arr,
+    jint thread_idx,
     jlongArray result_out)
 {
-    jint* cancel_ptr = (*env)->GetIntArrayElements(env, cancel_flag_arr, NULL);
-    jint* tested_ptr = (*env)->GetIntArrayElements(env, keys_tested_arr, NULL);
-
     uint8_t btn = ((uint32_t)fix) >> 28;
     uint16_t disc = ((uint32_t)serial) & 0x3FF;
 
@@ -181,7 +216,7 @@ Java_com_flipper_psadecrypt_KeeloqBruteForce_nativeBruteForce(
             (uint32_t)serial, (uint32_t)hop1, (uint32_t)hop2,
             btn, disc,
             (uint32_t)range_start, (uint32_t)range_end,
-            (volatile int*)cancel_ptr, (int*)tested_ptr,
+            thread_idx,
             &out_man, &out_devkey, &out_cnt);
         break;
     case 7:
@@ -189,7 +224,7 @@ Java_com_flipper_psadecrypt_KeeloqBruteForce_nativeBruteForce(
             (uint32_t)serial, (uint32_t)fix, (uint32_t)hop1, (uint32_t)hop2,
             btn, disc,
             (uint32_t)range_start, (uint32_t)range_end,
-            (volatile int*)cancel_ptr, (int*)tested_ptr,
+            thread_idx,
             &out_man, &out_devkey, &out_cnt);
         break;
     case 8:
@@ -197,13 +232,10 @@ Java_com_flipper_psadecrypt_KeeloqBruteForce_nativeBruteForce(
             (uint32_t)serial, (uint32_t)hop1, (uint32_t)hop2,
             btn, disc,
             (uint32_t)range_start, (uint32_t)range_end,
-            (volatile int*)cancel_ptr, (int*)tested_ptr,
+            thread_idx,
             &out_man, &out_devkey, &out_cnt);
         break;
     }
-
-    (*env)->ReleaseIntArrayElements(env, cancel_flag_arr, cancel_ptr, 0);
-    (*env)->ReleaseIntArrayElements(env, keys_tested_arr, tested_ptr, 0);
 
     if (found) {
         jlong result[3];

@@ -17,22 +17,20 @@ class KeeloqBfExecutor {
     private val numThreads = Runtime.getRuntime().availableProcessors().coerceIn(1, 8)
     private val executor = Executors.newFixedThreadPool(numThreads)
     private val cancelled = AtomicBoolean(false)
-
-    private val cancelFlags = Array(numThreads) { intArrayOf(0) }
-    private val perThreadTested = Array(numThreads) { intArrayOf(0) }
+    private val bf = KeeloqBruteForce()
 
     fun getTotalKeysTested(): Long {
         var sum = 0L
-        for (arr in perThreadTested) {
-            sum += (arr[0].toLong() and 0xFFFFFFFFL)
+        for (i in 0 until numThreads) {
+            sum += (bf.nativeGetKeysTested(i).toLong() and 0xFFFFFFFFL)
         }
         return sum
     }
 
     fun cancel() {
         cancelled.set(true)
-        for (flag in cancelFlags) {
-            flag[0] = 1
+        for (i in 0 until numThreads) {
+            bf.nativeSetCancel(i)
         }
     }
 
@@ -43,8 +41,9 @@ class KeeloqBfExecutor {
         rangeStart: Long, rangeEnd: Long
     ): KlBfResult {
         cancelled.set(false)
-        for (flag in cancelFlags) flag[0] = 0
-        for (arr in perThreadTested) arr[0] = 0
+        for (i in 0 until numThreads) {
+            bf.nativeResetThread(i)
+        }
 
         val startTime = System.currentTimeMillis()
         val rangeSize = rangeEnd - rangeStart
@@ -58,13 +57,12 @@ class KeeloqBfExecutor {
 
             val threadIdx = i
             val future = executor.submit<KlBfResult> {
-                val bf = KeeloqBruteForce()
+                val threadBf = KeeloqBruteForce()
                 val resultOut = LongArray(3)
-                val found = bf.nativeBruteForce(
+                val found = threadBf.nativeBruteForce(
                     learningType, serial, fix, hop1, hop2,
                     chunkStart.toInt(), chunkEnd.toInt(),
-                    cancelFlags[threadIdx],
-                    perThreadTested[threadIdx],
+                    threadIdx,
                     resultOut
                 )
                 if (found) {

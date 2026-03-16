@@ -254,7 +254,7 @@ class KeeloqDecryptFragment : Fragment() {
                 progressText.text = "$pct% — ${formatCount(tested)} / ${formatCount(totalKeys)}"
                 speedText.text = "${formatCount(kps)} keys/sec"
 
-                mainActivity?.sendBleData(KeeloqBleProtocol.encodeProgress(0, tested.toInt(), kps.toInt()))
+                mainActivity?.sendBleData(KeeloqBleProtocol.encodeProgress(0, (tested and 0xFFFFFFFFL).toInt(), kps.toInt()))
                 handler.postDelayed(this, 500)
             }
         }

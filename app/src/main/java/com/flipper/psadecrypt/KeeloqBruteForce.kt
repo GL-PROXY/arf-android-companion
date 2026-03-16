@@ -12,8 +12,11 @@ class KeeloqBruteForce {
         serial: Int, fix: Int,
         hop1: Int, hop2: Int,
         rangeStart: Int, rangeEnd: Int,
-        cancelFlag: IntArray,
-        keysTested: IntArray,
+        threadIdx: Int,
         resultOut: LongArray
     ): Boolean
+
+    external fun nativeResetThread(threadIdx: Int)
+    external fun nativeSetCancel(threadIdx: Int)
+    external fun nativeGetKeysTested(threadIdx: Int): Int
 }
