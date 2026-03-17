@@ -191,6 +191,13 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
             navView.setCheckedItem(R.id.nav_psa_decrypt)
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+                notifPermLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
         val cpuCount = Runtime.getRuntime().availableProcessors()
         appendLog("App started, $cpuCount CPU cores, SDK ${Build.VERSION.SDK_INT}")
     }
@@ -323,11 +330,18 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
         ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
         appendLog("Permission results: $results")
-        if (results.values.all { it }) startBleScan()
+        val bleGranted = results.filterKeys { it != Manifest.permission.POST_NOTIFICATIONS }.values.all { it }
+        if (bleGranted) startBleScan()
         else {
             bleStatusText.text = "BLE permissions denied"
             appendLog("BLE permissions denied")
         }
+    }
+
+    private val notifPermLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        appendLog("POST_NOTIFICATIONS permission: $granted")
     }
 
     private fun requestPermissionsAndScan() {
@@ -337,6 +351,9 @@ class MainActivity : AppCompatActivity(), FlipperBleClient.Listener {
             perms.add(Manifest.permission.BLUETOOTH_CONNECT)
         } else {
             perms.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            perms.add(Manifest.permission.POST_NOTIFICATIONS)
         }
         val needed = perms.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
