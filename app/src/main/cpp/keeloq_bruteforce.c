@@ -1,3 +1,8 @@
+/*
+ * KeeLoq brute-force - Native C for Android JNI
+ * Implements Magic Serial Type 6/7/8 key recovery using the KeeLoq cipher.
+ * Called from KeeloqBruteForce.kt, split across multiple threads for speed.
+ */
 #define _GNU_SOURCE
 #include <jni.h>
 #include <stdint.h>
@@ -6,19 +11,24 @@
 #include <sched.h>
 #include <unistd.h>
 
+/* KeeLoq non-linear function lookup table and bit-extraction helpers */
 #define KLQ_NLF 0x3A5C742EU
 #define bit(x, n) (((x) >> (n)) & 1)
 #define g5(x, a, b, c, d, e) \
     (bit(x,a) + bit(x,b)*2 + bit(x,c)*4 + bit(x,d)*8 + bit(x,e)*16)
 
+/* Per-thread progress counters and cancellation flags, written by worker threads */
 #define MAX_BF_THREADS 16
 static volatile int32_t g_keys_tested[MAX_BF_THREADS];
 static volatile int32_t g_cancel[MAX_BF_THREADS];
 
+/* CPU core affinity state - populated once by detect_big_cores() */
 static int g_big_cores[MAX_BF_THREADS];
 static int g_num_big_cores = 0;
 static int g_cores_detected = 0;
 
+/* Read cpufreq to find the fastest cores (big cores on big.LITTLE).
+ * Threads are pinned to these to maximise brute-force throughput. */
 static void detect_big_cores(void) {
     if (g_cores_detected) return;
     int ncpus = sysconf(_SC_NPROCESSORS_CONF);
@@ -55,6 +65,7 @@ static void detect_big_cores(void) {
     g_cores_detected = 1;
 }
 
+/* Pin the calling thread to the big core assigned to thread_idx. */
 static void pin_to_big_core(int thread_idx) {
     detect_big_cores();
     int core = g_big_cores[thread_idx % g_num_big_cores];
@@ -64,6 +75,7 @@ static void pin_to_big_core(int thread_idx) {
     sched_setaffinity(0, sizeof(set), &set);
 }
 
+/* Run 528 rounds of KeeLoq decryption on a 32-bit hop word using a 64-bit key. */
 static uint32_t keeloq_decrypt(uint32_t data, uint64_t key) {
     uint32_t x = data;
     for (int r = 0; r < 528; r++) {
@@ -74,6 +86,8 @@ static uint32_t keeloq_decrypt(uint32_t data, uint64_t key) {
     return x;
 }
 
+/* Check a decrypted hop word: button nibble must match, discriminator must
+ * match exactly or at least the low byte must match (partial match). */
 static inline bool validate_hop(uint32_t dec, uint8_t expected_btn, uint16_t expected_disc) {
     if ((dec >> 28) != expected_btn) return false;
     uint16_t disc = (dec >> 16) & 0x3FF;
@@ -82,6 +96,8 @@ static inline bool validate_hop(uint32_t dec, uint8_t expected_btn, uint16_t exp
     return false;
 }
 
+/* Type 6 (Magic Serial Simple): manufacturer key derived from serial bytes.
+ * Upper 40 bits fixed from serial, lower 32 bits are searched. */
 static bool brute_type6(
     uint32_t serial, uint32_t hop1, uint32_t hop2,
     uint8_t btn, uint16_t disc,
@@ -124,6 +140,8 @@ static bool brute_type6(
     return false;
 }
 
+/* Type 7 (Magic Serial Custom): upper 4 bytes taken directly from fix word,
+ * lower 32 bits are searched. */
 static bool brute_type7(
     uint32_t serial, uint32_t fix, uint32_t hop1, uint32_t hop2,
     uint8_t btn, uint16_t disc,
@@ -175,6 +193,8 @@ static bool brute_type7(
     return false;
 }
 
+/* Type 8 (Magic Serial Extended): lower 24 bits fixed from serial,
+ * upper 40 bits are searched. */
 static bool brute_type8(
     uint32_t serial, uint32_t hop1, uint32_t hop2,
     uint8_t btn, uint16_t disc,
