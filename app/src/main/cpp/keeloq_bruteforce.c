@@ -112,8 +112,10 @@ static void brute_type6(
     uint64_t upper = ((uint64_t)(serial & 0x00FFFFFF) << 40)
         | ((uint64_t)(((serial & 0xFF) + ((serial >> 8) & 0xFF)) & 0xFF) << 32);
 
-    for (uint64_t man_lo = (uint64_t)(range_start & 0xFFFFFFFFULL);
-         man_lo < (uint64_t)(range_end & 0xFFFFFFFFULL); man_lo++) {
+    uint64_t start64 = (uint64_t)(range_start & 0xFFFFFFFFULL);
+    uint64_t end64 = (range_end == 0) ? 0x100000000ULL : (uint64_t)(range_end & 0xFFFFFFFFULL);
+
+    for (uint64_t man_lo = start64; man_lo < end64; man_lo++) {
         if (g_cancel[thread_idx]) return;
 
         uint64_t devkey = upper | (uint32_t)man_lo;
@@ -121,7 +123,7 @@ static void brute_type6(
 
         if (!validate_hop(dec1, btn, disc)) {
             if ((man_lo & 0xFFFF) == 0)
-                g_keys_tested[thread_idx] = (int32_t)(man_lo - (range_start & 0xFFFFFFFFULL));
+                g_keys_tested[thread_idx] = (int32_t)(man_lo - start64);
             continue;
         }
 
@@ -135,9 +137,9 @@ static void brute_type6(
             }
         }
         if ((man_lo & 0xFFFF) == 0)
-            g_keys_tested[thread_idx] = (int32_t)(man_lo - (range_start & 0xFFFFFFFFULL));
+            g_keys_tested[thread_idx] = (int32_t)(man_lo - start64);
     }
-    g_keys_tested[thread_idx] = (int32_t)((range_end & 0xFFFFFFFFULL) - (range_start & 0xFFFFFFFFULL));
+    g_keys_tested[thread_idx] = (int32_t)(end64 - start64);
 }
 
 static void brute_type7(
@@ -151,8 +153,10 @@ static void brute_type7(
     uint8_t s2 = (fix >> 16) & 0xFF;
     uint8_t s3 = (fix >> 24) & 0xFF;
 
-    for (uint64_t man_lo = (uint64_t)(range_start & 0xFFFFFFFFULL);
-         man_lo < (uint64_t)(range_end & 0xFFFFFFFFULL); man_lo++) {
+    uint64_t start64 = (uint64_t)(range_start & 0xFFFFFFFFULL);
+    uint64_t end64 = (range_end == 0) ? 0x100000000ULL : (uint64_t)(range_end & 0xFFFFFFFFULL);
+
+    for (uint64_t man_lo = start64; man_lo < end64; man_lo++) {
         if (g_cancel[thread_idx]) return;
 
         uint64_t man = (uint32_t)man_lo;
@@ -167,7 +171,7 @@ static void brute_type7(
 
         if (!validate_hop(dec1, btn, disc)) {
             if ((man_lo & 0xFFFF) == 0)
-                g_keys_tested[thread_idx] = (int32_t)(man_lo - (range_start & 0xFFFFFFFFULL));
+                g_keys_tested[thread_idx] = (int32_t)(man_lo - start64);
             continue;
         }
 
@@ -181,9 +185,9 @@ static void brute_type7(
             }
         }
         if ((man_lo & 0xFFFF) == 0)
-            g_keys_tested[thread_idx] = (int32_t)(man_lo - (range_start & 0xFFFFFFFFULL));
+            g_keys_tested[thread_idx] = (int32_t)(man_lo - start64);
     }
-    g_keys_tested[thread_idx] = (int32_t)((range_end & 0xFFFFFFFFULL) - (range_start & 0xFFFFFFFFULL));
+    g_keys_tested[thread_idx] = (int32_t)(end64 - start64);
 }
 
 static void brute_type8(
@@ -194,8 +198,10 @@ static void brute_type8(
 {
     uint32_t serial_lo24 = serial & 0xFFFFFF;
 
-    for (uint64_t upper = (uint64_t)(range_start & 0xFFFFFFFFULL);
-         upper < (uint64_t)(range_end & 0xFFFFFFFFULL); upper++) {
+    uint64_t start64 = (uint64_t)(range_start & 0xFFFFFFFFULL);
+    uint64_t end64 = (range_end == 0) ? 0x100000000ULL : (uint64_t)(range_end & 0xFFFFFFFFULL);
+
+    for (uint64_t upper = start64; upper < end64; upper++) {
         if (g_cancel[thread_idx]) return;
 
         uint64_t man = (upper << 24) | serial_lo24;
@@ -204,7 +210,7 @@ static void brute_type8(
 
         if (!validate_hop(dec1, btn, disc)) {
             if ((upper & 0xFFFF) == 0)
-                g_keys_tested[thread_idx] = (int32_t)(upper - (range_start & 0xFFFFFFFFULL));
+                g_keys_tested[thread_idx] = (int32_t)(upper - start64);
             continue;
         }
 
@@ -218,9 +224,9 @@ static void brute_type8(
             }
         }
         if ((upper & 0xFFFF) == 0)
-            g_keys_tested[thread_idx] = (int32_t)(upper - (range_start & 0xFFFFFFFFULL));
+            g_keys_tested[thread_idx] = (int32_t)(upper - start64);
     }
-    g_keys_tested[thread_idx] = (int32_t)((range_end & 0xFFFFFFFFULL) - (range_start & 0xFFFFFFFFULL));
+    g_keys_tested[thread_idx] = (int32_t)(end64 - start64);
 }
 
 JNIEXPORT void JNICALL
