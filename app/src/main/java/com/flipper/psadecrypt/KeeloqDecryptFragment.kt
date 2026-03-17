@@ -35,6 +35,8 @@ class KeeloqDecryptFragment : Fragment() {
     var bfExecutor: KeeloqBfExecutor? = null
     private var progressRunnable: Runnable? = null
     private var bfStartTime = 0L
+    private var lastCandidateCount = 0
+    private val candidates = mutableListOf<KlBfResult>()
 
     private val mainActivity: MainActivity?
         get() = activity as? MainActivity
@@ -127,43 +129,38 @@ class KeeloqDecryptFragment : Fragment() {
 
     private fun runAutoSequence(serial: Int, fix: Int, hop1: Int, hop2: Int) {
         val cores = selectedCoreCount()
+        lastCandidateCount = 0
+        candidates.clear()
+
         Thread {
+            val totalStart = System.currentTimeMillis()
+
             for (type in intArrayOf(6, 7, 8)) {
-                if (bfExecutor?.let { false } ?: false) break
                 handler.post { statusText.text = "Trying Type $type (2^32)..." }
 
                 val executor = KeeloqBfExecutor(cores)
                 bfExecutor = executor
                 bfStartTime = System.currentTimeMillis()
+                lastCandidateCount = 0
                 handler.post { startProgressPolling(executor, TOTAL_32BIT) }
 
                 mainActivity?.appendLog("KL BF Type $type started")
-                val result = executor.run(type, serial, fix, hop1, hop2, 0L, TOTAL_32BIT)
+                val elapsed = executor.run(type, serial, fix, hop1, hop2, 0L, TOTAL_32BIT)
                 stopProgressPolling()
+                flushCandidatesSync(executor)
 
-                if (result.found) {
-                    val finalResult = result.copy(learnType = type)
-                    handler.post {
-                        showResult(finalResult)
-                        setButtonsEnabled(true)
-                    }
-                    mainActivity?.sendBleData(KeeloqBleProtocol.encodeResult(finalResult))
-                    mainActivity?.appendLog("KL FOUND! type=$type mfkey=0x${java.lang.Long.toHexString(finalResult.mfkey).uppercase()}")
-                    bfExecutor = null
-                    return@Thread
-                }
-                mainActivity?.appendLog("KL Type $type: not found (${result.elapsedMs}ms)")
+                mainActivity?.appendLog("KL Type $type done (${elapsed}ms), ${candidates.size} candidate(s) total")
+
+                if (executor.isCancelled()) break
             }
+
+            val totalElapsed = System.currentTimeMillis() - totalStart
+            mainActivity?.sendBleData(KeeloqBleProtocol.encodeBfComplete(candidates.size, totalElapsed))
 
             handler.post {
-                statusText.text = "Not found in Types 6, 7, 8"
-                resultText.text = ""
-                progressBar.progress = 100
+                showCandidateResults(totalElapsed)
                 setButtonsEnabled(true)
-                context?.let { BleKeepAliveService.clearBfProgress(it) }
             }
-            val notFound = KlBfResult(found = false, elapsedMs = 0)
-            mainActivity?.sendBleData(KeeloqBleProtocol.encodeResult(notFound))
             bfExecutor = null
         }.start()
     }
@@ -173,6 +170,8 @@ class KeeloqDecryptFragment : Fragment() {
         statusText.text = "Running Type $learnType on $cores cores..."
         progressBar.progress = 0
         resultText.text = ""
+        lastCandidateCount = 0
+        candidates.clear()
 
         val executor = KeeloqBfExecutor(cores)
         bfExecutor = executor
@@ -180,17 +179,62 @@ class KeeloqDecryptFragment : Fragment() {
         startProgressPolling(executor, TOTAL_32BIT)
 
         Thread {
-            val result = executor.run(learnType, serial, fix, hop1, hop2, 0L, TOTAL_32BIT)
+            val elapsed = executor.run(learnType, serial, fix, hop1, hop2, 0L, TOTAL_32BIT)
             stopProgressPolling()
-            val finalResult = result.copy(learnType = learnType)
+            flushCandidatesSync(executor)
+
+            mainActivity?.sendBleData(KeeloqBleProtocol.encodeBfComplete(candidates.size, elapsed))
 
             handler.post {
-                showResult(finalResult)
+                showCandidateResults(elapsed)
                 setButtonsEnabled(true)
             }
-            mainActivity?.sendBleData(KeeloqBleProtocol.encodeResult(finalResult))
             bfExecutor = null
         }.start()
+    }
+
+    private fun flushCandidatesSync(executor: KeeloqBfExecutor) {
+        val count = executor.getCandidateCount()
+        val newCandidates = mutableListOf<KlBfResult>()
+        for (i in lastCandidateCount until count) {
+            val c = executor.getCandidate(i) ?: continue
+            newCandidates.add(c)
+        }
+        if (newCandidates.isNotEmpty()) {
+            val latch = java.util.concurrent.CountDownLatch(1)
+            handler.post {
+                for (c in newCandidates) {
+                    candidates.add(c)
+                    mainActivity?.sendBleData(KeeloqBleProtocol.encodeCandidate(c))
+                    mainActivity?.appendLog("KL candidate #${candidates.size}: mfkey=0x${String.format("%016X", c.mfkey)} type=${c.learnType}")
+                }
+                lastCandidateCount = count
+                latch.countDown()
+            }
+            latch.await()
+        } else {
+            lastCandidateCount = count
+        }
+    }
+
+    private fun showCandidateResults(elapsedMs: Long) {
+        if (candidates.isNotEmpty()) {
+            statusText.text = "DONE — ${candidates.size} candidate(s) in ${elapsedMs}ms"
+            val sb = StringBuilder()
+            for ((idx, c) in candidates.withIndex()) {
+                sb.append("Candidate ${idx + 1}:\n")
+                sb.append("  MfKey: ${String.format("%016X", c.mfkey)}\n")
+                sb.append("  DevKey: ${String.format("%016X", c.devkey)}\n")
+                sb.append("  Cnt: 0x${String.format("%04X", c.cnt)}  Type: ${c.learnType}\n")
+                if (idx < candidates.size - 1) sb.append("\n")
+            }
+            resultText.text = sb.toString()
+        } else {
+            statusText.text = "Not found — ${elapsedMs}ms"
+            resultText.text = ""
+        }
+        progressBar.progress = 100
+        context?.let { BleKeepAliveService.clearBfProgress(it) }
     }
 
     fun handleBleData(data: ByteArray) {
@@ -226,25 +270,6 @@ class KeeloqDecryptFragment : Fragment() {
         }
     }
 
-    private fun showResult(result: KlBfResult) {
-        if (result.found) {
-            val mfHex = String.format("%016X", result.mfkey)
-            val dkHex = String.format("%016X", result.devkey)
-            statusText.text = "FOUND (Type ${result.learnType}) — ${result.elapsedMs}ms"
-            resultText.text = "MfKey: $mfHex\n" +
-                "DevKey: $dkHex\n" +
-                "Counter: 0x${String.format("%04X", result.cnt)}\n" +
-                "Learn Type: ${result.learnType}\n" +
-                "Time: ${result.elapsedMs}ms"
-            mainActivity?.appendLog("KL FOUND! mfkey=$mfHex devkey=$dkHex cnt=${result.cnt}")
-        } else {
-            statusText.text = "Not found — ${result.elapsedMs}ms"
-            resultText.text = ""
-        }
-        progressBar.progress = 100
-        context?.let { BleKeepAliveService.clearBfProgress(it) }
-    }
-
     private fun runBenchmark() {
         statusText.text = "Benchmarking KeeLoq (1M keys)..."
         progressBar.progress = 0
@@ -257,11 +282,11 @@ class KeeloqDecryptFragment : Fragment() {
         startProgressPolling(executor, 0x100000L)
 
         Thread {
-            val result = executor.run(6, 0x1234567, 0x91234567.toInt(), 0, 0, 0L, 0x100000L)
+            val elapsed = executor.run(6, 0x1234567, 0x91234567.toInt(), 0, 0, 0L, 0x100000L)
             stopProgressPolling()
 
-            val elapsed = result.elapsedMs.coerceAtLeast(1)
-            val keysPerSec = 0x100000L * 1000 / elapsed
+            val elapsedClamped = elapsed.coerceAtLeast(1)
+            val keysPerSec = 0x100000L * 1000 / elapsedClamped
 
             handler.post {
                 val cores = Runtime.getRuntime().availableProcessors()
@@ -289,6 +314,18 @@ class KeeloqDecryptFragment : Fragment() {
                 progressText.text = "$pct% — ${formatCount(tested)} / ${formatCount(totalKeys)}"
                 val kpsStr = "${formatCount(kps)} keys/sec"
                 speedText.text = kpsStr
+
+                val count = executor.getCandidateCount()
+                if (count > lastCandidateCount) {
+                    for (i in lastCandidateCount until count) {
+                        val c = executor.getCandidate(i) ?: continue
+                        candidates.add(c)
+                        mainActivity?.sendBleData(KeeloqBleProtocol.encodeCandidate(c))
+                        mainActivity?.appendLog("KL candidate #${candidates.size}: mfkey=0x${String.format("%016X", c.mfkey)} type=${c.learnType}")
+                    }
+                    lastCandidateCount = count
+                    statusText.text = "Running... ${candidates.size} candidate(s)"
+                }
 
                 mainActivity?.sendBleData(KeeloqBleProtocol.encodeProgress(0, (tested and 0xFFFFFFFFL).toInt(), kps.toInt()))
                 context?.let { BleKeepAliveService.updateBfProgress(it, pct, "${formatCount(kps)}") }

@@ -1,8 +1,3 @@
-/*
- * KeeLoq brute-force - Native C for Android JNI
- * Implements Magic Serial Type 6/7/8 key recovery using the KeeLoq cipher.
- * Called from KeeloqBruteForce.kt, split across multiple threads for speed.
- */
 #define _GNU_SOURCE
 #include <jni.h>
 #include <stdint.h>
@@ -11,24 +6,32 @@
 #include <sched.h>
 #include <unistd.h>
 
-/* KeeLoq non-linear function lookup table and bit-extraction helpers */
 #define KLQ_NLF 0x3A5C742EU
 #define bit(x, n) (((x) >> (n)) & 1)
 #define g5(x, a, b, c, d, e) \
     (bit(x,a) + bit(x,b)*2 + bit(x,c)*4 + bit(x,d)*8 + bit(x,e)*16)
 
-/* Per-thread progress counters and cancellation flags, written by worker threads */
 #define MAX_BF_THREADS 16
 static volatile int32_t g_keys_tested[MAX_BF_THREADS];
 static volatile int32_t g_cancel[MAX_BF_THREADS];
 
-/* CPU core affinity state - populated once by detect_big_cores() */
 static int g_big_cores[MAX_BF_THREADS];
 static int g_num_big_cores = 0;
 static int g_cores_detected = 0;
 
 /* Read cpufreq to find the fastest cores (big cores on big.LITTLE).
  * Threads are pinned to these to maximise brute-force throughput. */
+#define MAX_CANDIDATES 32
+typedef struct {
+    uint64_t mfkey;
+    uint64_t devkey;
+    uint32_t cnt;
+    int32_t learn_type;
+} KlCandidate;
+
+static volatile int32_t g_num_candidates = 0;
+static KlCandidate g_candidates[MAX_CANDIDATES];
+
 static void detect_big_cores(void) {
     if (g_cores_detected) return;
     int ncpus = sysconf(_SC_NPROCESSORS_CONF);
@@ -65,7 +68,6 @@ static void detect_big_cores(void) {
     g_cores_detected = 1;
 }
 
-/* Pin the calling thread to the big core assigned to thread_idx. */
 static void pin_to_big_core(int thread_idx) {
     detect_big_cores();
     int core = g_big_cores[thread_idx % g_num_big_cores];
@@ -75,7 +77,6 @@ static void pin_to_big_core(int thread_idx) {
     sched_setaffinity(0, sizeof(set), &set);
 }
 
-/* Run 528 rounds of KeeLoq decryption on a 32-bit hop word using a 64-bit key. */
 static uint32_t keeloq_decrypt(uint32_t data, uint64_t key) {
     uint32_t x = data;
     for (int r = 0; r < 528; r++) {
@@ -86,8 +87,6 @@ static uint32_t keeloq_decrypt(uint32_t data, uint64_t key) {
     return x;
 }
 
-/* Check a decrypted hop word: button nibble must match, discriminator must
- * match exactly or at least the low byte must match (partial match). */
 static inline bool validate_hop(uint32_t dec, uint8_t expected_btn, uint16_t expected_disc) {
     if ((dec >> 28) != expected_btn) return false;
     uint16_t disc = (dec >> 16) & 0x3FF;
@@ -98,19 +97,28 @@ static inline bool validate_hop(uint32_t dec, uint8_t expected_btn, uint16_t exp
 
 /* Type 6 (Magic Serial Simple): manufacturer key derived from serial bytes.
  * Upper 40 bits fixed from serial, lower 32 bits are searched. */
-static bool brute_type6(
+static inline void store_candidate(uint64_t mfkey, uint64_t devkey, uint32_t cnt, int32_t learn_type) {
+    int32_t idx = __sync_fetch_and_add(&g_num_candidates, 1);
+    if (idx < MAX_CANDIDATES) {
+        g_candidates[idx].mfkey = mfkey;
+        g_candidates[idx].devkey = devkey;
+        g_candidates[idx].cnt = cnt;
+        g_candidates[idx].learn_type = learn_type;
+    }
+}
+
+static void brute_type6(
     uint32_t serial, uint32_t hop1, uint32_t hop2,
     uint8_t btn, uint16_t disc,
     uint32_t range_start, uint32_t range_end,
-    int thread_idx,
-    uint64_t* out_man, uint64_t* out_devkey, uint32_t* out_cnt)
+    int thread_idx)
 {
     uint64_t upper = ((uint64_t)(serial & 0x00FFFFFF) << 40)
         | ((uint64_t)(((serial & 0xFF) + ((serial >> 8) & 0xFF)) & 0xFF) << 32);
 
     for (uint64_t man_lo = (uint64_t)(range_start & 0xFFFFFFFFULL);
          man_lo < (uint64_t)(range_end & 0xFFFFFFFFULL); man_lo++) {
-        if (g_cancel[thread_idx]) return false;
+        if (g_cancel[thread_idx]) return;
 
         uint64_t devkey = upper | (uint32_t)man_lo;
         uint32_t dec1 = keeloq_decrypt(hop1, devkey);
@@ -127,27 +135,22 @@ static bool brute_type6(
             uint16_t cnt2 = dec2 & 0xFFFF;
             int diff = (int)cnt2 - (int)cnt1;
             if (diff >= 1 && diff <= 256) {
-                *out_man = upper | (uint32_t)man_lo;
-                *out_devkey = devkey;
-                *out_cnt = cnt1;
-                return true;
+                store_candidate(upper | (uint32_t)man_lo, devkey, cnt1, 6);
             }
         }
         if ((man_lo & 0xFFFF) == 0)
             g_keys_tested[thread_idx] = (int32_t)(man_lo - (range_start & 0xFFFFFFFFULL));
     }
     g_keys_tested[thread_idx] = (int32_t)((range_end & 0xFFFFFFFFULL) - (range_start & 0xFFFFFFFFULL));
-    return false;
 }
 
 /* Type 7 (Magic Serial Custom): upper 4 bytes taken directly from fix word,
  * lower 32 bits are searched. */
-static bool brute_type7(
+static void brute_type7(
     uint32_t serial, uint32_t fix, uint32_t hop1, uint32_t hop2,
     uint8_t btn, uint16_t disc,
     uint32_t range_start, uint32_t range_end,
-    int thread_idx,
-    uint64_t* out_man, uint64_t* out_devkey, uint32_t* out_cnt)
+    int thread_idx)
 {
     uint8_t s0 = fix & 0xFF;
     uint8_t s1 = (fix >> 8) & 0xFF;
@@ -156,7 +159,7 @@ static bool brute_type7(
 
     for (uint64_t man_lo = (uint64_t)(range_start & 0xFFFFFFFFULL);
          man_lo < (uint64_t)(range_end & 0xFFFFFFFFULL); man_lo++) {
-        if (g_cancel[thread_idx]) return false;
+        if (g_cancel[thread_idx]) return;
 
         uint64_t man = (uint32_t)man_lo;
         uint8_t* m = (uint8_t*)&man;
@@ -180,33 +183,28 @@ static bool brute_type7(
             uint16_t cnt2 = dec2 & 0xFFFF;
             int diff = (int)cnt2 - (int)cnt1;
             if (diff >= 1 && diff <= 256) {
-                *out_man = man;
-                *out_devkey = devkey;
-                *out_cnt = cnt1;
-                return true;
+                store_candidate(man, devkey, cnt1, 7);
             }
         }
         if ((man_lo & 0xFFFF) == 0)
             g_keys_tested[thread_idx] = (int32_t)(man_lo - (range_start & 0xFFFFFFFFULL));
     }
     g_keys_tested[thread_idx] = (int32_t)((range_end & 0xFFFFFFFFULL) - (range_start & 0xFFFFFFFFULL));
-    return false;
 }
 
 /* Type 8 (Magic Serial Extended): lower 24 bits fixed from serial,
  * upper 40 bits are searched. */
-static bool brute_type8(
+static void brute_type8(
     uint32_t serial, uint32_t hop1, uint32_t hop2,
     uint8_t btn, uint16_t disc,
     uint32_t range_start, uint32_t range_end,
-    int thread_idx,
-    uint64_t* out_man, uint64_t* out_devkey, uint32_t* out_cnt)
+    int thread_idx)
 {
     uint32_t serial_lo24 = serial & 0xFFFFFF;
 
     for (uint64_t upper = (uint64_t)(range_start & 0xFFFFFFFFULL);
          upper < (uint64_t)(range_end & 0xFFFFFFFFULL); upper++) {
-        if (g_cancel[thread_idx]) return false;
+        if (g_cancel[thread_idx]) return;
 
         uint64_t man = (upper << 24) | serial_lo24;
         uint64_t devkey = man;
@@ -224,17 +222,13 @@ static bool brute_type8(
             uint16_t cnt2 = dec2 & 0xFFFF;
             int diff = (int)cnt2 - (int)cnt1;
             if (diff >= 1 && diff <= 256) {
-                *out_man = man;
-                *out_devkey = devkey;
-                *out_cnt = cnt1;
-                return true;
+                store_candidate(man, devkey, cnt1, 8);
             }
         }
         if ((upper & 0xFFFF) == 0)
             g_keys_tested[thread_idx] = (int32_t)(upper - (range_start & 0xFFFFFFFFULL));
     }
     g_keys_tested[thread_idx] = (int32_t)((range_end & 0xFFFFFFFFULL) - (range_start & 0xFFFFFFFFULL));
-    return false;
 }
 
 JNIEXPORT void JNICALL
@@ -274,59 +268,71 @@ Java_com_flipper_psadecrypt_KeeloqBruteForce_nativeGetKeysTested(
     return 0;
 }
 
+JNIEXPORT void JNICALL
+Java_com_flipper_psadecrypt_KeeloqBruteForce_nativeResetCandidates(
+    JNIEnv* env, jobject thiz)
+{
+    g_num_candidates = 0;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_flipper_psadecrypt_KeeloqBruteForce_nativeGetCandidateCount(
+    JNIEnv* env, jobject thiz)
+{
+    return (jint)g_num_candidates;
+}
+
 JNIEXPORT jboolean JNICALL
+Java_com_flipper_psadecrypt_KeeloqBruteForce_nativeGetCandidate(
+    JNIEnv* env, jobject thiz, jint index, jlongArray result_out)
+{
+    if (index < 0 || index >= g_num_candidates || index >= MAX_CANDIDATES) {
+        return JNI_FALSE;
+    }
+    jlong result[4];
+    result[0] = (jlong)g_candidates[index].mfkey;
+    result[1] = (jlong)g_candidates[index].devkey;
+    result[2] = (jlong)g_candidates[index].cnt;
+    result[3] = (jlong)g_candidates[index].learn_type;
+    (*env)->SetLongArrayRegion(env, result_out, 0, 4, result);
+    return JNI_TRUE;
+}
+
+JNIEXPORT void JNICALL
 Java_com_flipper_psadecrypt_KeeloqBruteForce_nativeBruteForce(
     JNIEnv* env, jobject thiz,
     jint learning_type,
     jint serial, jint fix,
     jint hop1, jint hop2,
     jint range_start, jint range_end,
-    jint thread_idx,
-    jlongArray result_out)
+    jint thread_idx)
 {
     pin_to_big_core(thread_idx);
 
     uint8_t btn = ((uint32_t)fix) >> 28;
     uint16_t disc = ((uint32_t)serial) & 0x3FF;
 
-    uint64_t out_man = 0, out_devkey = 0;
-    uint32_t out_cnt = 0;
-    bool found = false;
-
     switch (learning_type) {
     case 6:
-        found = brute_type6(
+        brute_type6(
             (uint32_t)serial, (uint32_t)hop1, (uint32_t)hop2,
             btn, disc,
             (uint32_t)range_start, (uint32_t)range_end,
-            thread_idx,
-            &out_man, &out_devkey, &out_cnt);
+            thread_idx);
         break;
     case 7:
-        found = brute_type7(
+        brute_type7(
             (uint32_t)serial, (uint32_t)fix, (uint32_t)hop1, (uint32_t)hop2,
             btn, disc,
             (uint32_t)range_start, (uint32_t)range_end,
-            thread_idx,
-            &out_man, &out_devkey, &out_cnt);
+            thread_idx);
         break;
     case 8:
-        found = brute_type8(
+        brute_type8(
             (uint32_t)serial, (uint32_t)hop1, (uint32_t)hop2,
             btn, disc,
             (uint32_t)range_start, (uint32_t)range_end,
-            thread_idx,
-            &out_man, &out_devkey, &out_cnt);
+            thread_idx);
         break;
     }
-
-    if (found) {
-        jlong result[3];
-        result[0] = (jlong)out_man;
-        result[1] = (jlong)out_devkey;
-        result[2] = (jlong)out_cnt;
-        (*env)->SetLongArrayRegion(env, result_out, 0, 3, result);
-    }
-
-    return (jboolean)found;
 }
